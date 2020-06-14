@@ -55,7 +55,7 @@ public class Conta implements Serializable {
 		return true;
 	}
 
-	private void soma(BigDecimal valor) {
+	public void soma(BigDecimal valor) {
 		saldo = saldo.add(valor);
 	}
 

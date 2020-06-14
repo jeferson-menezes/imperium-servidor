@@ -17,7 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class Categoria implements Serializable {
+public class Categoria extends Visual implements Serializable {
 
 	private static final long serialVersionUID = 4277227197737258219L;
 
@@ -34,8 +34,9 @@ public class Categoria implements Serializable {
 
 	}
 
-	public Categoria(String nome, String descricao, NaturezaCategoria natureza, boolean ativo) {
-		super();
+	public Categoria(String nome, String descricao, NaturezaCategoria natureza, boolean ativo, String cor,
+			String icone) {
+		super(cor, icone);
 		this.nome = nome;
 		this.descricao = descricao;
 		this.natureza = natureza;

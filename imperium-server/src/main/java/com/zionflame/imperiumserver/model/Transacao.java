@@ -21,10 +21,21 @@ public class Transacao implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	private BigDecimal valor;
-	private String descricao;
-	private LocalDateTime data;
-	private LocalDateTime hora;
+	protected Long id;
+	protected BigDecimal valor;
+	protected String descricao;
+	protected LocalDateTime data;
+	protected LocalDateTime hora;
+
+	public Transacao() {
+
+	}
+
+	public Transacao(BigDecimal valor, String descricao, LocalDateTime data, LocalDateTime hora) {
+		this.valor = valor;
+		this.descricao = descricao;
+		this.data = data;
+		this.hora = hora;
+	}
 
 }

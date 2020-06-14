@@ -37,9 +37,9 @@ public class CategoriaController {
 		URI uri = uriBuilder.path("/usuarios/{id}").buildAndExpand(categoria.getId()).toUri();
 		return ResponseEntity.created(uri).body(new CategoriaDto(categoria));
 	}
-	
+
 	@PutMapping
-	public ResponseEntity<?> atualizar(@PathVariable Long id, CategoriaForm form){
+	public ResponseEntity<?> atualizar(@PathVariable Long id, CategoriaForm form) {
 		Optional<Categoria> optional = categoriaRepository.findById(id);
 		if (!optional.isPresent()) {
 			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
@@ -49,11 +49,13 @@ public class CategoriaController {
 		categoria.setDescricao(form.getDescricao());
 		categoria.setNatureza(form.getNatureza());
 		categoria.setNome(form.getNome());
+		categoria.setCor(form.getCor());
+		categoria.setIcone(form.getIcone());
 		return ResponseEntity.ok(new CategoriaDto(categoria));
 	}
-	
+
 	@GetMapping("/natureza/{natureza}")
-	public ResponseEntity<?> listarPorNatureza(@PathVariable NaturezaCategoria natureza){
+	public ResponseEntity<?> listarPorNatureza(@PathVariable NaturezaCategoria natureza) {
 		List<Categoria> categorias = categoriaRepository.findByNatureza(natureza);
 		return ResponseEntity.ok(CategoriaDto.converter(categorias));
 	}

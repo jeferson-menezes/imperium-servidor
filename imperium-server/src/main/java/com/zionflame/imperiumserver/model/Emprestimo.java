@@ -1,6 +1,8 @@
 package com.zionflame.imperiumserver.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -21,6 +23,7 @@ public class Emprestimo extends Transacao implements Serializable {
 
 	private static final long serialVersionUID = -7079240843328282478L;
 	
+	private boolean excluido;
 	private String pessoa;
 	@Enumerated(EnumType.STRING)
 	private NaturezaEmprestimo natureza;
@@ -36,4 +39,12 @@ public class Emprestimo extends Transacao implements Serializable {
 	public Emprestimo() {
 
 	}
+
+	public Emprestimo(String pessoa, NaturezaEmprestimo natureza, BigDecimal valor, String descricao, LocalDateTime data, LocalDateTime hora) {
+		super(valor, descricao, data, hora);
+		this.pessoa = pessoa;
+		this.natureza = natureza;
+	}
+	
+	
 }

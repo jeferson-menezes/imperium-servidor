@@ -17,22 +17,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.zionflame.imperiumserver.controller.dto.DespesaDto;
 import com.zionflame.imperiumserver.controller.dto.MensagemDto;
+import com.zionflame.imperiumserver.controller.dto.ReceitaDto;
 import com.zionflame.imperiumserver.controller.form.ContaIdForm;
-import com.zionflame.imperiumserver.controller.form.DespesaForm;
+import com.zionflame.imperiumserver.controller.form.ReceitaForm;
 import com.zionflame.imperiumserver.controller.form.TransacaoFormAtualiza;
 import com.zionflame.imperiumserver.controller.form.ValorForm;
 import com.zionflame.imperiumserver.model.Categoria;
 import com.zionflame.imperiumserver.model.Conta;
-import com.zionflame.imperiumserver.model.Despesa;
+import com.zionflame.imperiumserver.model.Receita;
 import com.zionflame.imperiumserver.repository.CategoriaRepository;
 import com.zionflame.imperiumserver.repository.ContaRepository;
-import com.zionflame.imperiumserver.service.DespesaService;
+import com.zionflame.imperiumserver.service.ReceitaService;
 
 @RestController
-@RequestMapping("/despesas")
-public class DespesaController {
+@RequestMapping("/receitas")
+public class ReceitaController {
 
 	@Autowired
 	private ContaRepository contaRepository;
@@ -41,10 +41,10 @@ public class DespesaController {
 	private CategoriaRepository categoriaRepository;
 
 	@Autowired
-	private DespesaService despesaService;
+	private ReceitaService receitaService;
 
 	@PostMapping
-	public ResponseEntity<?> adicionar(@RequestBody DespesaForm form, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<?> adicionar(@RequestBody ReceitaForm form, UriComponentsBuilder uriBuilder) {
 
 		Optional<Conta> optConta = contaRepository.findById(form.getContaId());
 		if (!optConta.isPresent())
@@ -58,52 +58,49 @@ public class DespesaController {
 		Categoria categoria = optCategoria.get();
 
 		if (form.isConcluida())
-			if (!conta.subtrai(form.getValor()))
-				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+			conta.soma(form.getValor());
 
-		Despesa despesa = form.converter();
-		despesa.setCategoria(categoria);
-		despesa.setConta(conta);
-		despesaService.adicionaDespesa(despesa);
+		Receita receita = form.converter();
+		receita.setCategoria(categoria);
+		receita.setConta(conta);
+		receitaService.adicionaReceita(receita);
 
-		URI uri = uriBuilder.path("/despesas/{id}").buildAndExpand(despesa.getId()).toUri();
-		return ResponseEntity.created(uri).body(new DespesaDto(despesa));
+		URI uri = uriBuilder.path("/receitas/{id}").buildAndExpand(receita.getId()).toUri();
+		return ResponseEntity.created(uri).body(new ReceitaDto(receita));
 	}
 
 	@Transactional
 	@PutMapping("/{id}")
 	public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody TransacaoFormAtualiza form) {
-		Despesa despesa = despesaService.buscarPorId(id);
-		if (despesa == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
+		Receita receita = receitaService.buscarPorId(id);
+		if (receita == null)
+			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
 
 		Optional<Categoria> categoria = categoriaRepository.findById(form.getCategoriaId());
 		if (!categoria.isPresent())
 			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
 
-		despesa.setDescricao(form.getDescricao());
-		despesa.setData(form.getData());
-		despesa.setHora(form.getHora());
-		despesa.setCategoria(categoria.get());
+		receita.setDescricao(form.getDescricao());
+		receita.setData(form.getData());
+		receita.setHora(form.getHora());
+		receita.setCategoria(categoria.get());
 
-		return ResponseEntity.ok(new DespesaDto(despesa));
+		return ResponseEntity.ok(new ReceitaDto(receita));
 	}
 
 	@Transactional
 	@PatchMapping("/{id}/finaliza")
 	public ResponseEntity<?> finaliza(@PathVariable Long id) {
 
-		Despesa despesa = despesaService.buscarPorId(id);
-		if (despesa == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
+		Receita receita = receitaService.buscarPorId(id);
+		if (receita == null)
+			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
 
-		if (despesa.isConcluida())
-			return ResponseEntity.badRequest().body(new MensagemDto("A despesa já foi paga!"));
+		if (receita.isConcluida())
+			return ResponseEntity.badRequest().body(new MensagemDto("A receita já foi recebida!"));
 
-		if (!despesa.getConta().subtrai(despesa.getValor()))
-			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
-
-		despesa.setConcluida(true);
+		receita.getConta().soma(receita.getValor());
+		receita.setConcluida(true);
 
 		return ResponseEntity.ok().build();
 	}
@@ -111,51 +108,51 @@ public class DespesaController {
 	@Transactional
 	@PatchMapping("/{id}/altera/conta")
 	public ResponseEntity<?> alteraConta(@PathVariable Long id, @RequestBody ContaIdForm form) {
-		Despesa despesa = despesaService.buscarPorId(id);
-		if (despesa == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
+		Receita receita = receitaService.buscarPorId(id);
+		if (receita == null)
+			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
 
 		Optional<Conta> optConta = contaRepository.findById(form.getContaId());
 		if (!optConta.isPresent())
 			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
 		Conta conta = optConta.get();
 
-		if (!conta.subtrai(despesa.getValor()))
+		if (!receita.getConta().subtrai(receita.getValor()))
 			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
 
-		despesa.getConta().soma(despesa.getValor());
+		conta.soma(receita.getValor());
+		receita.setConta(conta);
 
-		despesa.setConta(conta);
-
-		return ResponseEntity.ok(new DespesaDto(despesa));
+		return ResponseEntity.ok(new ReceitaDto(receita));
 	}
 
 	@Transactional
 	@PatchMapping("/{id}/altera/valor")
 	public ResponseEntity<?> alteraValor(@PathVariable Long id, @RequestBody ValorForm form) {
-		Despesa despesa = despesaService.buscarPorId(id);
-		if (despesa == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
+		Receita receita = receitaService.buscarPorId(id);
+		if (receita == null)
+			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
 
-		despesa.getConta().soma(despesa.getValor());
-
-		if (!despesa.getConta().subtrai(form.getValor()))
+		if (!receita.getConta().subtrai(receita.getValor()))
 			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
 
-		despesa.setValor(form.getValor());
-		return ResponseEntity.ok(new DespesaDto(despesa));
+		receita.getConta().soma(form.getValor());
+		receita.setValor(form.getValor());
+
+		return ResponseEntity.ok(new ReceitaDto(receita));
 	}
 
 	@Transactional
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> excluir(@PathVariable Long id) {
 
-		Despesa despesa = despesaService.buscarPorId(id);
-		if (despesa == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
+		Receita receita = receitaService.buscarPorId(id);
+		if (receita == null)
+			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
 
-		despesa.getConta().soma(despesa.getValor());
-		despesa.setExcluido(true);
+		if (!receita.getConta().subtrai(receita.getValor()))
+			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+		receita.setExcluido(true);
 		return ResponseEntity.ok().build();
 	}
 

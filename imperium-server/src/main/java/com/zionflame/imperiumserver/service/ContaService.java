@@ -51,7 +51,7 @@ public class ContaService {
 		return conta;
 	}
 
-	private Conta buscarPorId(Long id) {
+	public Conta buscarPorId(Long id) {
 		Optional<Conta> optional = contaRepository.findById(id);
 		if (!optional.isPresent())
 			return null;
