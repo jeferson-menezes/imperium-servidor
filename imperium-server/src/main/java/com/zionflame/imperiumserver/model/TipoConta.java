@@ -10,28 +10,16 @@ import javax.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter
 @Getter
+@Setter
 @Entity
-public class Usuario implements Serializable {
-	private static final long serialVersionUID = 8833724539013627019L;
-	
+public class TipoConta extends Visual implements Serializable {
+
+	private static final long serialVersionUID = -7513687947045505052L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String nome;
-	private String email;
-	private String senha;
-
-	public Usuario() {
-
-	}
-
-	public Usuario(String nome, String email, String senha) {
-		this.nome = nome;
-		this.email = email;
-		this.senha = senha;
-	}
-	
-	
+	private String descricao;
 }
