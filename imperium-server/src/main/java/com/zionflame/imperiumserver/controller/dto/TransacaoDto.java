@@ -2,12 +2,15 @@ package com.zionflame.imperiumserver.controller.dto;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.zionflame.imperiumserver.model.Transacao;
 
 import lombok.Getter;
+import lombok.Setter;
 
+@Setter
 @Getter
 public class TransacaoDto implements Serializable {
 
@@ -16,7 +19,7 @@ public class TransacaoDto implements Serializable {
 	protected Long id;
 	protected BigDecimal valor;
 	protected String descricao;
-	protected LocalDateTime data;
+	protected LocalDate data;
 	protected LocalDateTime hora;
 
 	public TransacaoDto(Transacao transacao) {

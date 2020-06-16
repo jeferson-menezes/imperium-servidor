@@ -31,14 +31,28 @@ public class Fatura implements Serializable {
 	private LocalDate abertura;
 	private LocalDate fechamento;
 	private LocalDate vencimento;
+	private int ano;
+	private int mes;
 	@Enumerated(EnumType.STRING)
 	private StatusFatura status;
 	@ManyToOne
 	private Cartao cartao;
 	@OneToMany(mappedBy = "fatura")
 	private List<ItemFatura> itens;
-	
+
 	public Fatura() {
-	
+
 	}
+
+	public Fatura(LocalDate abertura, LocalDate fechamento, LocalDate vencimento, int ano, int mes, StatusFatura status,
+			Cartao cartao) {
+		this.abertura = abertura;
+		this.fechamento = fechamento;
+		this.vencimento = vencimento;
+		this.ano = ano;
+		this.mes = mes;
+		this.status = status;
+		this.cartao = cartao;
+	}
+
 }

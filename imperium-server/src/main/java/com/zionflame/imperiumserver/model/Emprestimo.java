@@ -2,6 +2,7 @@ package com.zionflame.imperiumserver.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class Emprestimo extends Transacao implements Serializable {
 
 	}
 
-	public Emprestimo(String pessoa, NaturezaEmprestimo natureza, BigDecimal valor, String descricao, LocalDateTime data, LocalDateTime hora) {
+	public Emprestimo(String pessoa, NaturezaEmprestimo natureza, BigDecimal valor, String descricao, LocalDate data, LocalDateTime hora) {
 		super(valor, descricao, data, hora);
 		this.pessoa = pessoa;
 		this.natureza = natureza;

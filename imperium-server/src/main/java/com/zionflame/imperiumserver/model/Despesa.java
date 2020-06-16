@@ -2,6 +2,7 @@ package com.zionflame.imperiumserver.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
@@ -28,7 +29,7 @@ public class Despesa extends Transacao implements Serializable {
 	public Despesa() {
 	}
 
-	public Despesa(BigDecimal valor, String descricao, LocalDateTime data, LocalDateTime hora, boolean concluida) {
+	public Despesa(BigDecimal valor, String descricao, LocalDate data, LocalDateTime hora, boolean concluida) {
 		super(valor, descricao, data, hora);
 		this.concluida = concluida;
 	}

@@ -2,6 +2,7 @@ package com.zionflame.imperiumserver.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
@@ -26,7 +27,7 @@ public class AcaoEmprestimo extends Transacao implements Serializable {
 
 	}
 
-	public AcaoEmprestimo(BigDecimal valor, String descricao, LocalDateTime data, LocalDateTime hora){
+	public AcaoEmprestimo(BigDecimal valor, String descricao, LocalDate data, LocalDateTime hora){
 		super(valor, descricao, data, hora);
 	}
 }

@@ -1,5 +1,7 @@
 package com.zionflame.imperiumserver.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +16,9 @@ public class UsuarioService {
 	private UsuarioRepository usuarioRepository;
 
 	public Usuario buscarPorEmail(String email) {
-		return usuarioRepository.findByEmail(email);
+		Optional<Usuario> optional = usuarioRepository.findByEmail(email);
+		if(!optional.isPresent()) return null;
+		return optional.get();
 	}
 
 	public Usuario adicionaUsuario(UsuarioForm form) {

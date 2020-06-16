@@ -2,6 +2,7 @@ package com.zionflame.imperiumserver.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
@@ -29,7 +30,7 @@ public class Receita extends Transacao implements Serializable {
 	public Receita() {
 	}
 
-	public Receita(BigDecimal valor, String descricao, LocalDateTime data, LocalDateTime hora, boolean concluida) {
+	public Receita(BigDecimal valor, String descricao, LocalDate data, LocalDateTime hora, boolean concluida) {
 		super(valor, descricao, data, hora);
 		this.concluida = concluida;
 	}

@@ -2,6 +2,7 @@ package com.zionflame.imperiumserver.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.GeneratedValue;
@@ -24,14 +25,14 @@ public class Transacao implements Serializable {
 	protected Long id;
 	protected BigDecimal valor;
 	protected String descricao;
-	protected LocalDateTime data;
+	protected LocalDate data;
 	protected LocalDateTime hora;
 
 	public Transacao() {
 
 	}
 
-	public Transacao(BigDecimal valor, String descricao, LocalDateTime data, LocalDateTime hora) {
+	public Transacao(BigDecimal valor, String descricao, LocalDate data, LocalDateTime hora) {
 		this.valor = valor;
 		this.descricao = descricao;
 		this.data = data;
