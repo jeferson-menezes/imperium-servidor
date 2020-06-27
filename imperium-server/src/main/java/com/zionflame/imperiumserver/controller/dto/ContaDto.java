@@ -16,7 +16,9 @@ public class ContaDto {
 	private BigDecimal saldo;
 	private String descricao;
 	private String tipoContaNome;
-	private String UsuarioNome;
+	private String usuarioNome;
+	private String tipoContaIcone;
+	private String tipoContaCor;
 
 	public ContaDto(Conta conta) {
 		id = conta.getId();
@@ -24,7 +26,9 @@ public class ContaDto {
 		descricao = conta.getDescricao();
 		saldo = conta.getSaldo();
 		tipoContaNome = conta.getTipo().getNome();
-		UsuarioNome = conta.getUsuario().getNome();
+		tipoContaIcone = conta.getTipo().getIcone();
+		tipoContaCor = conta.getTipo().getCor();
+		usuarioNome = conta.getUsuario().getNome();
 	}
 
 	public static List<ContaDto> converter(List<Conta> contas) {

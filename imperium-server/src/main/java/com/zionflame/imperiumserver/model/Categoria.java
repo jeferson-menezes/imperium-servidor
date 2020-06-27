@@ -9,6 +9,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.Where;
+
 import com.zionflame.imperiumserver.model.enums.NaturezaCategoria;
 
 import lombok.Getter;
@@ -17,6 +19,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
+@Where(clause = "deletado != 1")
 public class Categoria extends Visual implements Serializable {
 
 	private static final long serialVersionUID = 4277227197737258219L;
@@ -29,6 +32,7 @@ public class Categoria extends Visual implements Serializable {
 	@Enumerated(EnumType.STRING)
 	private NaturezaCategoria natureza;
 	private boolean ativo;
+	private boolean deletado = false;
 
 	public Categoria() {
 

@@ -15,12 +15,19 @@ public class CategoriaDto {
 	private String nome;
 	private String descricao;
 	private NaturezaCategoria natureza;
+	private boolean ativo;
+	private String icone;
+	private String cor;
 
 	public CategoriaDto(Categoria categoria) {
 		id = categoria.getId();
 		nome = categoria.getNome();
 		descricao = categoria.getDescricao();
 		natureza = categoria.getNatureza();
+		ativo = categoria.isAtivo();
+		icone = categoria.getIcone();
+		cor = categoria.getCor();
+		
 	}
 
 	public static List<CategoriaDto> converter(List<Categoria> categorias) {

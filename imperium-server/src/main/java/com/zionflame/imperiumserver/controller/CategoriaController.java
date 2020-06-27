@@ -6,7 +6,9 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -38,8 +40,8 @@ public class CategoriaController {
 		return ResponseEntity.created(uri).body(new CategoriaDto(categoria));
 	}
 
-	@PutMapping
-	public ResponseEntity<?> atualizar(@PathVariable Long id, CategoriaForm form) {
+	@PutMapping("/{id}")
+	public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody CategoriaForm form) {
 		Optional<Categoria> optional = categoriaRepository.findById(id);
 		if (!optional.isPresent()) {
 			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
@@ -51,6 +53,7 @@ public class CategoriaController {
 		categoria.setNome(form.getNome());
 		categoria.setCor(form.getCor());
 		categoria.setIcone(form.getIcone());
+		categoriaRepository.save(categoria);
 		return ResponseEntity.ok(new CategoriaDto(categoria));
 	}
 
@@ -58,5 +61,35 @@ public class CategoriaController {
 	public ResponseEntity<?> listarPorNatureza(@PathVariable NaturezaCategoria natureza) {
 		List<Categoria> categorias = categoriaRepository.findByNatureza(natureza);
 		return ResponseEntity.ok(CategoriaDto.converter(categorias));
+	}
+
+	@GetMapping
+	public ResponseEntity<?> listar() {
+		List<Categoria> categorias = categoriaRepository.findAll();
+		return ResponseEntity.ok(CategoriaDto.converter(categorias));
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<?> excluir(@PathVariable Long id) {
+		Optional<Categoria> opt = categoriaRepository.findById(id);
+		if (!opt.isPresent()) {
+			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
+		}
+		Categoria categoria = opt.get();
+		categoria.setDeletado(true);
+		categoriaRepository.save(categoria);
+		return ResponseEntity.ok().build();
+	}
+
+	@PatchMapping("/{id}/inativa")
+	public ResponseEntity<?> desativar(@PathVariable Long id) {
+		Optional<Categoria> opt = categoriaRepository.findById(id);
+		if (!opt.isPresent()) {
+			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
+		}
+		Categoria categoria = opt.get();
+		categoria.setAtivo(!categoria.isAtivo());
+		categoriaRepository.save(categoria);
+		return ResponseEntity.ok(new CategoriaDto(categoria));
 	}
 }

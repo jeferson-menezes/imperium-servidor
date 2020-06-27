@@ -5,10 +5,10 @@ import lombok.Getter;
 @Getter
 public class MensagemDto {
 
-	private String string;
+	private String message;
 
-	public MensagemDto(String string) {
-		this.string = string;
+	public MensagemDto(String message) {
+		this.message = message;
 	}
 
 }

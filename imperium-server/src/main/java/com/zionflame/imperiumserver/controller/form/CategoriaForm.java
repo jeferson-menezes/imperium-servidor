@@ -13,10 +13,10 @@ public class CategoriaForm extends Visual {
 
 	private static final long serialVersionUID = -1496111152812982868L;
 	
-	private boolean ativo;
-	private NaturezaCategoria natureza;
-	private String descricao;
 	private String nome;
+	private String descricao;
+	private NaturezaCategoria natureza;
+	private boolean ativo;
 
 	public Categoria converter() {
 		return new Categoria(nome, descricao, natureza, ativo, cor, icone);

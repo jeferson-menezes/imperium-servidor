@@ -58,7 +58,7 @@ public class ContaController {
 		return ResponseEntity.ok(new ContaDto(conta));
 	}
 
-	@GetMapping("/usuario/{id}")
+	@GetMapping("/usuario/{usuarioId}")
 	public ResponseEntity<?> listarPorUsuario(@PathVariable Long usuarioId) {
 		List<Conta> contas = contaService.listarPorUsuario(usuarioId);
 		return ResponseEntity.ok(ContaDto.converter(contas));
