@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.zionflame.imperiumserver.controller.dto.ContaDetalhesDto;
 import com.zionflame.imperiumserver.controller.dto.ContaDto;
 import com.zionflame.imperiumserver.controller.dto.MensagemDto;
 import com.zionflame.imperiumserver.controller.form.ContaForm;
@@ -58,9 +59,29 @@ public class ContaController {
 		return ResponseEntity.ok(new ContaDto(conta));
 	}
 
+	@PatchMapping("/{id}/inativa")
+	public ResponseEntity<?> desativar(@PathVariable Long id) {
+		Conta conta = contaService.inativar(id);
+		if (conta == null) {
+			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
+		}
+		return ResponseEntity.ok(new ContaDto(conta));
+	}
+
 	@GetMapping("/usuario/{usuarioId}")
 	public ResponseEntity<?> listarPorUsuario(@PathVariable Long usuarioId) {
 		List<Conta> contas = contaService.listarPorUsuario(usuarioId);
 		return ResponseEntity.ok(ContaDto.converter(contas));
 	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<?> detalhar(@PathVariable Long id) {
+		Conta conta = contaService.buscarPorId(id);
+		if (conta == null) {
+			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
+		}
+		return ResponseEntity.ok(new ContaDetalhesDto(conta));
+	}
+
+
 }

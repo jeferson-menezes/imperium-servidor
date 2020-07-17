@@ -1,13 +1,20 @@
 package com.zionflame.imperiumserver.controller;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,11 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.zionflame.imperiumserver.controller.dto.MensagemDto;
+import com.zionflame.imperiumserver.controller.dto.ReceitaDetalhesDto;
 import com.zionflame.imperiumserver.controller.dto.ReceitaDto;
 import com.zionflame.imperiumserver.controller.form.ContaIdForm;
 import com.zionflame.imperiumserver.controller.form.ReceitaForm;
 import com.zionflame.imperiumserver.controller.form.TransacaoFormAtualiza;
 import com.zionflame.imperiumserver.controller.form.ValorForm;
+import com.zionflame.imperiumserver.helper.DateHelper;
 import com.zionflame.imperiumserver.model.Categoria;
 import com.zionflame.imperiumserver.model.Conta;
 import com.zionflame.imperiumserver.model.Receita;
@@ -102,7 +111,7 @@ public class ReceitaController {
 		receita.getConta().soma(receita.getValor());
 		receita.setConcluida(true);
 
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(new ReceitaDto(receita));
 	}
 
 	@Transactional
@@ -117,10 +126,13 @@ public class ReceitaController {
 			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
 		Conta conta = optConta.get();
 
-		if (!receita.getConta().subtrai(receita.getValor()))
-			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+		if (receita.isConcluida()) {
+			if (!receita.getConta().subtrai(receita.getValor()))
+				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
 
-		conta.soma(receita.getValor());
+			conta.soma(receita.getValor());
+		}
+
 		receita.setConta(conta);
 
 		return ResponseEntity.ok(new ReceitaDto(receita));
@@ -133,10 +145,12 @@ public class ReceitaController {
 		if (receita == null)
 			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
 
-		if (!receita.getConta().subtrai(receita.getValor()))
-			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+		if (receita.isConcluida()) {
+			if (!receita.getConta().subtrai(receita.getValor()))
+				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+			receita.getConta().soma(form.getValor());
+		}
 
-		receita.getConta().soma(form.getValor());
 		receita.setValor(form.getValor());
 
 		return ResponseEntity.ok(new ReceitaDto(receita));
@@ -150,10 +164,59 @@ public class ReceitaController {
 		if (receita == null)
 			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
 
-		if (!receita.getConta().subtrai(receita.getValor()))
-			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
-		receita.setExcluido(true);
+		if (receita.isConcluida()) {
+			if (!receita.getConta().subtrai(receita.getValor()))
+				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+		}
+
+		receita.setDeletado(true);
 		return ResponseEntity.ok().build();
 	}
 
+	@GetMapping("/usuario/{usuarioId}")
+	public ResponseEntity<?> listar(@PathVariable Long usuarioId,
+
+			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+
+		Page<Receita> receitas = receitaService.listarPorUsuario(usuarioId, pageable);
+		return ResponseEntity.ok(ReceitaDto.converter(receitas));
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<?> detalhar(@PathVariable Long id) {
+		Receita receita = receitaService.buscarPorId(id);
+		if (receita == null)
+			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
+		return ResponseEntity.ok(new ReceitaDetalhesDto(receita));
+	}
+
+	@GetMapping("/filtra/usuario/{id}/data/{data}")
+	public ResponseEntity<?> listarPorData(@PathVariable Long id, @PathVariable String data,
+			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+		Page<Receita> receitas = receitaService.listarPorUsuarioData(id, DateHelper.data(data), pageable);
+		return ResponseEntity.ok(ReceitaDto.converter(receitas));
+	}
+
+	@GetMapping("/filtra/usuario/{id}/descricao/{descricao}")
+	public ResponseEntity<?> listarPorDescricao(@PathVariable Long id, @PathVariable String descricao,
+			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+
+		Page<Receita> receitas = receitaService.listarPorUsuarioDescricao(id, descricao, pageable);
+		return ResponseEntity.ok(ReceitaDto.converter(receitas));
+	}
+
+	@GetMapping("/filtra/usuario/{id}/mes/{mes}")
+	public ResponseEntity<?> filtrarPorMes(@PathVariable Long id, @PathVariable String mes,
+			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+		LocalDate[] periodo = DateHelper.mes(mes);
+		Page<Receita> receitas = receitaService.filtrarPorUsuarioMes(id, periodo[0], periodo[1], pageable);
+		return ResponseEntity.ok(ReceitaDto.converter(receitas));
+	}
+
+	@GetMapping("/lista/usuario/{id}/mes/{mes}")
+	public ResponseEntity<?> filtrarPorMes(@PathVariable Long id, @PathVariable String mes) {
+		LocalDate[] periodo = DateHelper.mes(mes);
+		List<Receita> receitas = receitaService.listarPorUsuarioMes(id, periodo[0], periodo[1]);
+		return ResponseEntity.ok(ReceitaDto.converter(receitas));
+	}
 }

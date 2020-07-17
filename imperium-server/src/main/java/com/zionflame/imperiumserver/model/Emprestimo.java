@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -24,7 +25,7 @@ public class Emprestimo extends Transacao implements Serializable {
 
 	private static final long serialVersionUID = -7079240843328282478L;
 	
-	private boolean excluido;
+	private boolean deletado;
 	private String pessoa;
 	@Enumerated(EnumType.STRING)
 	private NaturezaEmprestimo natureza;
@@ -41,7 +42,7 @@ public class Emprestimo extends Transacao implements Serializable {
 
 	}
 
-	public Emprestimo(String pessoa, NaturezaEmprestimo natureza, BigDecimal valor, String descricao, LocalDate data, LocalDateTime hora) {
+	public Emprestimo(String pessoa, NaturezaEmprestimo natureza, BigDecimal valor, String descricao, LocalDate data, LocalTime hora) {
 		super(valor, descricao, data, hora);
 		this.pessoa = pessoa;
 		this.natureza = natureza;

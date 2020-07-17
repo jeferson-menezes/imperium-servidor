@@ -63,10 +63,27 @@ public class ContaService {
 		if (conta == null)
 			return null;
 		conta.setSaldo(saldo);
-		return conta;
+		return contaRepository.save(conta);
 	}
 
 	public List<Conta> listarPorUsuario(Long usuarioId) {
 		return contaRepository.findByUsuarioId(usuarioId);
+	}
+
+//	public Conta excluir(Long id) {
+//		Conta conta = this.buscarPorId(id);
+//		if (conta == null)
+//			return null;
+//		conta.setDeletado(true);
+//		contaRepository.save(conta);
+//		return contaRepository.save(conta);
+//	}
+
+	public Conta inativar(Long id) {
+		Conta conta = this.buscarPorId(id);
+		if (conta == null)
+			return null;
+		conta.setAtivo(!conta.isAtivo());
+		return contaRepository.save(conta);
 	}
 }

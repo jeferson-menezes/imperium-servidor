@@ -3,7 +3,7 @@ package com.zionflame.imperiumserver.controller.dto;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import com.zionflame.imperiumserver.model.Transacao;
 
@@ -20,7 +20,7 @@ public class TransacaoDto implements Serializable {
 	protected BigDecimal valor;
 	protected String descricao;
 	protected LocalDate data;
-	protected LocalDateTime hora;
+	protected LocalTime	 hora;
 
 	public TransacaoDto(Transacao transacao) {
 

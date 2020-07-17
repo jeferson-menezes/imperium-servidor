@@ -103,7 +103,7 @@ public class EmprestimoController {
 				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
 			}
 		}
-		emprestimo.setExcluido(true);
+		emprestimo.setDeletado(true);
 
 		return ResponseEntity.ok().build();
 	}

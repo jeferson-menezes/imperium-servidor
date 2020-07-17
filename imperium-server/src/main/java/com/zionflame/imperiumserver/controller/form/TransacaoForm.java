@@ -2,7 +2,9 @@ package com.zionflame.imperiumserver.controller.form;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
+
+import javax.validation.constraints.NotNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -11,8 +13,13 @@ import lombok.Setter;
 @Setter
 public class TransacaoForm {
 
+	@NotNull
 	protected BigDecimal valor;
+	@NotNull
 	protected String descricao;
+	@NotNull
 	protected LocalDate data;
-	protected LocalDateTime hora;
+	@NotNull
+	protected LocalTime hora;
+	
 }

@@ -1,13 +1,21 @@
 package com.zionflame.imperiumserver.controller;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,12 +25,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.zionflame.imperiumserver.controller.dto.DespesaDetalhesDto;
 import com.zionflame.imperiumserver.controller.dto.DespesaDto;
 import com.zionflame.imperiumserver.controller.dto.MensagemDto;
 import com.zionflame.imperiumserver.controller.form.ContaIdForm;
 import com.zionflame.imperiumserver.controller.form.DespesaForm;
 import com.zionflame.imperiumserver.controller.form.TransacaoFormAtualiza;
 import com.zionflame.imperiumserver.controller.form.ValorForm;
+import com.zionflame.imperiumserver.helper.DateHelper;
 import com.zionflame.imperiumserver.model.Categoria;
 import com.zionflame.imperiumserver.model.Conta;
 import com.zionflame.imperiumserver.model.Despesa;
@@ -44,7 +54,7 @@ public class DespesaController {
 	private DespesaService despesaService;
 
 	@PostMapping
-	public ResponseEntity<?> adicionar(@RequestBody DespesaForm form, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<?> adicionar(@RequestBody @Valid DespesaForm form, UriComponentsBuilder uriBuilder) {
 
 		Optional<Conta> optConta = contaRepository.findById(form.getContaId());
 		if (!optConta.isPresent())
@@ -105,7 +115,7 @@ public class DespesaController {
 
 		despesa.setConcluida(true);
 
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(new DespesaDto(despesa));
 	}
 
 	@Transactional
@@ -120,10 +130,15 @@ public class DespesaController {
 			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
 		Conta conta = optConta.get();
 
-		if (!conta.subtrai(despesa.getValor()))
-			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+		if (despesa.getConta().getId() == conta.getId())
+			return ResponseEntity.badRequest().body(new MensagemDto("A conta deve ser diferente da anterior!"));
 
-		despesa.getConta().soma(despesa.getValor());
+		if (despesa.isConcluida()) {
+			despesa.getConta().soma(despesa.getValor());
+
+			if (!conta.subtrai(despesa.getValor()))
+				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+		}
 
 		despesa.setConta(conta);
 
@@ -137,10 +152,11 @@ public class DespesaController {
 		if (despesa == null)
 			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
 
-		despesa.getConta().soma(despesa.getValor());
-
-		if (!despesa.getConta().subtrai(form.getValor()))
-			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+		if (despesa.isConcluida()) {
+			despesa.getConta().soma(despesa.getValor());
+			if (!despesa.getConta().subtrai(form.getValor()))
+				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+		}
 
 		despesa.setValor(form.getValor());
 		return ResponseEntity.ok(new DespesaDto(despesa));
@@ -154,9 +170,57 @@ public class DespesaController {
 		if (despesa == null)
 			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
 
-		despesa.getConta().soma(despesa.getValor());
-		despesa.setExcluido(true);
+		if (despesa.isConcluida())
+			despesa.getConta().soma(despesa.getValor());
+
+		despesa.setDeletado(true);
 		return ResponseEntity.ok().build();
 	}
 
+	@GetMapping("/usuario/{usuarioId}")
+	public ResponseEntity<?> listar(@PathVariable Long usuarioId,
+			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+
+		Page<Despesa> despesas = despesaService.listarPorUsuario(usuarioId, pageable);
+		return ResponseEntity.ok(DespesaDto.converter(despesas));
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<?> detalhar(@PathVariable Long id) {
+		Despesa despesa = despesaService.buscarPorId(id);
+		if (despesa == null)
+			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
+		return ResponseEntity.ok(new DespesaDetalhesDto(despesa));
+	}
+
+	@GetMapping("/filtra/usuario/{id}/data/{data}")
+	public ResponseEntity<?> listarPorData(@PathVariable Long id, @PathVariable String data,
+			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+		Page<Despesa> despesas = despesaService.listarPorUsuarioData(id, DateHelper.data(data), pageable);
+		return ResponseEntity.ok(DespesaDto.converter(despesas));
+	}
+
+	@GetMapping("/filtra/usuario/{id}/descricao/{descricao}")
+	public ResponseEntity<?> filtrarPorDescricao(@PathVariable Long id, @PathVariable String descricao,
+
+			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+
+		Page<Despesa> despesas = despesaService.listarPorUsuarioDescricao(id, descricao, pageable);
+		return ResponseEntity.ok(DespesaDto.converter(despesas));
+	}
+
+	@GetMapping("/filtra/usuario/{id}/mes/{mes}")
+	public ResponseEntity<?> filtrarPorMes(@PathVariable Long id, @PathVariable String mes,
+			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+		LocalDate[] periodo = DateHelper.mes(mes);
+		Page<Despesa> despesas = despesaService.filtrarPorUsuarioMes(id, periodo[0], periodo[1], pageable);
+		return ResponseEntity.ok(DespesaDto.converter(despesas));
+	}
+
+	@GetMapping("/lista/usuario/{id}/mes/{mes}")
+	public ResponseEntity<?> listarPorMes(@PathVariable Long id, @PathVariable String mes) {
+		LocalDate[] periodo = DateHelper.mes(mes);
+		List<Despesa> despesas = despesaService.listarPorUsuarioMes(id, periodo[0], periodo[1]);
+		return ResponseEntity.ok(DespesaDto.converter(despesas));
+	}
 }

@@ -3,7 +3,6 @@ package com.zionflame.imperiumserver.model;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import javax.persistence.Entity;
@@ -15,20 +14,19 @@ import lombok.Setter;
 @Setter
 @Getter
 @Entity
-public class AcaoEmprestimo extends Transacao implements Serializable {
+public class Transferencia extends Transacao implements Serializable {
 
-	private static final long serialVersionUID = 5093075232777023288L;
-
+	private static final long serialVersionUID = 1197546089853376060L;
 	@ManyToOne
-	private Conta conta;
+	private Conta contaOrigem;
 	@ManyToOne
-	private Emprestimo emprestimo;
+	private Conta contaDestino;
 
-	public AcaoEmprestimo() {
+	public Transferencia() {
 
 	}
 
-	public AcaoEmprestimo(BigDecimal valor, String descricao, LocalDate data, LocalTime hora){
+	public Transferencia(BigDecimal valor, String descricao, LocalDate data, LocalTime hora) {
 		super(valor, descricao, data, hora);
 	}
 }

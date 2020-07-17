@@ -69,17 +69,17 @@ public class CategoriaController {
 		return ResponseEntity.ok(CategoriaDto.converter(categorias));
 	}
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<?> excluir(@PathVariable Long id) {
-		Optional<Categoria> opt = categoriaRepository.findById(id);
-		if (!opt.isPresent()) {
-			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
-		}
-		Categoria categoria = opt.get();
-		categoria.setDeletado(true);
-		categoriaRepository.save(categoria);
-		return ResponseEntity.ok().build();
-	}
+//	@DeleteMapping("/{id}")
+//	public ResponseEntity<?> excluir(@PathVariable Long id) {
+//		Optional<Categoria> opt = categoriaRepository.findById(id);
+//		if (!opt.isPresent()) {
+//			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
+//		}
+//		Categoria categoria = opt.get();
+//		categoria.setDeletado(true);
+//		categoriaRepository.save(categoria);
+//		return ResponseEntity.ok().build();
+//	}
 
 	@PatchMapping("/{id}/inativa")
 	public ResponseEntity<?> desativar(@PathVariable Long id) {

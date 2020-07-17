@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -26,13 +27,13 @@ public class Transacao implements Serializable {
 	protected BigDecimal valor;
 	protected String descricao;
 	protected LocalDate data;
-	protected LocalDateTime hora;
+	protected LocalTime hora;
 
 	public Transacao() {
 
 	}
 
-	public Transacao(BigDecimal valor, String descricao, LocalDate data, LocalDateTime hora) {
+	public Transacao(BigDecimal valor, String descricao, LocalDate data, LocalTime hora) {
 		this.valor = valor;
 		this.descricao = descricao;
 		this.data = data;

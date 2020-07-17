@@ -1,8 +1,5 @@
 package com.zionflame.imperiumserver.controller.dto;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 
 import com.zionflame.imperiumserver.model.Receita;
@@ -10,28 +7,25 @@ import com.zionflame.imperiumserver.model.Receita;
 import lombok.Getter;
 
 @Getter
-public class ReceitaDto extends TransacaoDto {
+public class ReceitaDetalhesDto extends TransacaoDto {
 
 	private static final long serialVersionUID = -4372368838002104992L;
 
-	private boolean concluida;
 	private String contaNome;
-	private String categoriaNome;
+	private boolean concluida;
+	private CategoriaDto categoria;
+	private ContaDto conta;
 
-	public ReceitaDto(Receita receita) {
+	public ReceitaDetalhesDto(Receita receita) {
 		super(receita);
 		concluida = receita.isConcluida();
 		contaNome = receita.getConta().getNome();
-		categoriaNome = receita.getCategoria().getNome();
+		categoria = new CategoriaDto(receita.getCategoria());
+		conta = new ContaDto(receita.getConta());
 	}
 
 	public static Page<ReceitaDto> converter(Page<Receita> receitas) {
 		return receitas.map(ReceitaDto::new);
-	}
-	
-
-	public static List<ReceitaDto> converter(List<Receita> receitas) {
-		return receitas.stream().map(ReceitaDto::new).collect(Collectors.toList());
 	}
 
 }

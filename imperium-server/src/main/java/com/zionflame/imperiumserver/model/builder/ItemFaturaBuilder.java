@@ -3,6 +3,7 @@ package com.zionflame.imperiumserver.model.builder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import com.zionflame.imperiumserver.model.CompraCartao;
 import com.zionflame.imperiumserver.model.Fatura;
@@ -13,7 +14,7 @@ public class ItemFaturaBuilder {
 	private BigDecimal valor;
 	private String descricao;
 	private LocalDate data;
-	private LocalDateTime hora;
+	private LocalTime hora;
 	private String parcela;
 	private Fatura fatura;
 	private CompraCartao compra;
@@ -33,7 +34,7 @@ public class ItemFaturaBuilder {
 		return this;
 	}
 
-	public ItemFaturaBuilder comHora(LocalDateTime hora) {
+	public ItemFaturaBuilder comHora(LocalTime hora) {
 		this.hora = hora;
 		return this;
 	}

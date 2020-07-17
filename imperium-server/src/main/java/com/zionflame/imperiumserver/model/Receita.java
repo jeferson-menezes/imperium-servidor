@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -19,9 +20,9 @@ public class Receita extends Transacao implements Serializable {
 
 	private static final long serialVersionUID = 81845211939237479L;
 
-	private boolean excluido = false;
 
 	private boolean concluida;
+	private boolean deletado;
 	@ManyToOne
 	private Conta conta;
 	@OneToOne
@@ -30,7 +31,7 @@ public class Receita extends Transacao implements Serializable {
 	public Receita() {
 	}
 
-	public Receita(BigDecimal valor, String descricao, LocalDate data, LocalDateTime hora, boolean concluida) {
+	public Receita(BigDecimal valor, String descricao, LocalDate data, LocalTime hora, boolean concluida) {
 		super(valor, descricao, data, hora);
 		this.concluida = concluida;
 	}
