@@ -34,9 +34,12 @@ import com.zionflame.imperiumserver.controller.form.ValorForm;
 import com.zionflame.imperiumserver.helper.DateHelper;
 import com.zionflame.imperiumserver.model.Categoria;
 import com.zionflame.imperiumserver.model.Conta;
+import com.zionflame.imperiumserver.model.Historia;
 import com.zionflame.imperiumserver.model.Receita;
+import com.zionflame.imperiumserver.model.enums.Natureza;
 import com.zionflame.imperiumserver.repository.CategoriaRepository;
 import com.zionflame.imperiumserver.repository.ContaRepository;
+import com.zionflame.imperiumserver.service.HistoriaService;
 import com.zionflame.imperiumserver.service.ReceitaService;
 
 @RestController
@@ -51,6 +54,9 @@ public class ReceitaController {
 
 	@Autowired
 	private ReceitaService receitaService;
+	
+	@Autowired
+	private HistoriaService historiaService;
 
 	@PostMapping
 	public ResponseEntity<?> adicionar(@RequestBody ReceitaForm form, UriComponentsBuilder uriBuilder) {
@@ -73,6 +79,8 @@ public class ReceitaController {
 		receita.setCategoria(categoria);
 		receita.setConta(conta);
 		receitaService.adicionaReceita(receita);
+		
+		historiaService.adiciona(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario() ));
 
 		URI uri = uriBuilder.path("/receitas/{id}").buildAndExpand(receita.getId()).toUri();
 		return ResponseEntity.created(uri).body(new ReceitaDto(receita));
@@ -93,6 +101,8 @@ public class ReceitaController {
 		receita.setData(form.getData());
 		receita.setHora(form.getHora());
 		receita.setCategoria(categoria.get());
+		
+		historiaService.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario()));
 
 		return ResponseEntity.ok(new ReceitaDto(receita));
 	}
@@ -152,6 +162,8 @@ public class ReceitaController {
 		}
 
 		receita.setValor(form.getValor());
+		
+		historiaService.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario()));
 
 		return ResponseEntity.ok(new ReceitaDto(receita));
 	}
@@ -170,6 +182,9 @@ public class ReceitaController {
 		}
 
 		receita.setDeletado(true);
+		
+		historiaService.exclui(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario()));
+		
 		return ResponseEntity.ok().build();
 	}
 

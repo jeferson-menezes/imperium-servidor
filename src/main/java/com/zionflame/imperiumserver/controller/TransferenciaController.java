@@ -23,9 +23,12 @@ import com.zionflame.imperiumserver.controller.dto.MensagemDto;
 import com.zionflame.imperiumserver.controller.dto.TransferenciaDto;
 import com.zionflame.imperiumserver.controller.form.TransferenciaForm;
 import com.zionflame.imperiumserver.model.Conta;
+import com.zionflame.imperiumserver.model.Historia;
 import com.zionflame.imperiumserver.model.Transferencia;
+import com.zionflame.imperiumserver.model.enums.Natureza;
 import com.zionflame.imperiumserver.repository.ContaRepository;
 import com.zionflame.imperiumserver.repository.TransferenciaRepository;
+import com.zionflame.imperiumserver.service.HistoriaService;
 
 @RestController
 @RequestMapping("/transferencias")
@@ -36,6 +39,10 @@ public class TransferenciaController {
 
 	@Autowired
 	private TransferenciaRepository transferenciaRepository;
+	
+
+	@Autowired
+	private HistoriaService historiaService;
 
 	@Transactional
 	@PostMapping
@@ -60,6 +67,8 @@ public class TransferenciaController {
 
 		transferenciaRepository.save(trasferencia);
 
+		historiaService.adiciona(new Historia(trasferencia, Natureza.TRANSFERENCIA, contaDestino.getUsuario()));
+		
 		URI uri = uriBuilder.path("/transferencias/{id}").buildAndExpand(trasferencia.getId()).toUri();
 		return ResponseEntity.created(uri).body(new TransferenciaDto(trasferencia));
 	}

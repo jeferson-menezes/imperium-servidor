@@ -36,9 +36,12 @@ import com.zionflame.imperiumserver.helper.DateHelper;
 import com.zionflame.imperiumserver.model.Categoria;
 import com.zionflame.imperiumserver.model.Conta;
 import com.zionflame.imperiumserver.model.Despesa;
+import com.zionflame.imperiumserver.model.Historia;
+import com.zionflame.imperiumserver.model.enums.Natureza;
 import com.zionflame.imperiumserver.repository.CategoriaRepository;
 import com.zionflame.imperiumserver.repository.ContaRepository;
 import com.zionflame.imperiumserver.service.DespesaService;
+import com.zionflame.imperiumserver.service.HistoriaService;
 
 @RestController
 @RequestMapping("/despesas")
@@ -52,6 +55,9 @@ public class DespesaController {
 
 	@Autowired
 	private DespesaService despesaService;
+	
+	@Autowired
+	private HistoriaService historiaService;
 
 	@PostMapping
 	public ResponseEntity<?> adicionar(@RequestBody @Valid DespesaForm form, UriComponentsBuilder uriBuilder) {
@@ -75,6 +81,8 @@ public class DespesaController {
 		despesa.setCategoria(categoria);
 		despesa.setConta(conta);
 		despesaService.adicionaDespesa(despesa);
+		
+		historiaService.adiciona(new Historia(despesa, Natureza.DESPESA, conta.getUsuario()));
 
 		URI uri = uriBuilder.path("/despesas/{id}").buildAndExpand(despesa.getId()).toUri();
 		return ResponseEntity.created(uri).body(new DespesaDto(despesa));
@@ -95,6 +103,9 @@ public class DespesaController {
 		despesa.setData(form.getData());
 		despesa.setHora(form.getHora());
 		despesa.setCategoria(categoria.get());
+		
+		
+		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario()));
 
 		return ResponseEntity.ok(new DespesaDto(despesa));
 	}
@@ -114,6 +125,8 @@ public class DespesaController {
 			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
 
 		despesa.setConcluida(true);
+		
+		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario()));
 
 		return ResponseEntity.ok(new DespesaDto(despesa));
 	}
@@ -159,6 +172,9 @@ public class DespesaController {
 		}
 
 		despesa.setValor(form.getValor());
+		
+		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario()));
+		
 		return ResponseEntity.ok(new DespesaDto(despesa));
 	}
 
@@ -174,6 +190,7 @@ public class DespesaController {
 			despesa.getConta().soma(despesa.getValor());
 
 		despesa.setDeletado(true);
+		historiaService.exclui(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario()));
 		return ResponseEntity.ok().build();
 	}
 
