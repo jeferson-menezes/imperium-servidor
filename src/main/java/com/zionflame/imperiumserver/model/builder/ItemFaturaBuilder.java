@@ -2,7 +2,6 @@ package com.zionflame.imperiumserver.model.builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import com.zionflame.imperiumserver.model.CompraCartao;

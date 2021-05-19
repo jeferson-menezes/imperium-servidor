@@ -67,7 +67,7 @@ public class TransferenciaController {
 
 		transferenciaRepository.save(trasferencia);
 
-		historiaService.adiciona(new Historia(trasferencia, Natureza.TRANSFERENCIA, contaDestino.getUsuario()));
+		historiaService.adiciona(new Historia(trasferencia, Natureza.TRANSFERENCIA, contaDestino.getUsuario(), contaOrigem));
 		
 		URI uri = uriBuilder.path("/transferencias/{id}").buildAndExpand(trasferencia.getId()).toUri();
 		return ResponseEntity.created(uri).body(new TransferenciaDto(trasferencia));

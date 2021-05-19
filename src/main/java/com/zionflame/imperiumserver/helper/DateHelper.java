@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class DateHelper {
+	private static String[] meses = {"",  "janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto",
+			"setembro", "outubro", "novembro", "dezembro" };
 
 	public static LocalDate atingeDia(LocalDate data, int dia) {
 		while (true) {
@@ -32,5 +34,9 @@ public class DateHelper {
 		periodo[0] = data.withDayOfMonth(1);
 		periodo[1] = data.withDayOfMonth(data.lengthOfMonth());
 		return periodo;
+	}
+
+	public static String getMesExtenso(int i) {
+		return meses[i];
 	}
 }

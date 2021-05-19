@@ -35,4 +35,16 @@ public class Cartao implements Serializable {
 	
 	public Cartao() {
 	}
+
+	public Cartao(String nome, BigDecimal limite, Bandeira bandeira, int diaFechamento, int diaVencimento,
+			Usuario usuario) {
+		this.nome = nome;
+		this.limite = limite;
+		this.bandeira = bandeira;
+		this.diaFechamento = diaFechamento;
+		this.diaVencimento = diaVencimento;
+		this.usuario = usuario;
+	}
+	
+	
 }

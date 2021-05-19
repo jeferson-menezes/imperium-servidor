@@ -28,8 +28,9 @@ public class FaturaService {
 	private ItemFaturaRepository itemFaturaRepository;
 
 	public void registraCompra(CompraCartao compra) {
+		
 		for (int i = 0; i < compra.getParcelas(); i++) {
-			
+
 			Fatura fatura = pegaFatura(compra.getCartao(), compra.getData().plusMonths(i));
 
 			ItemFatura item = new ItemFaturaBuilder()
@@ -66,31 +67,32 @@ public class FaturaService {
 
 	public void verificaExistenciaFaturas(List<Cartao> cartoes) {
 		cartoes.forEach(cartao -> {
-			pegaFatura(cartao, LocalDate.now());
+			this.pegaFatura(cartao, LocalDate.now());
 		});
 	}
 
 	private Fatura pegaFatura(Cartao cartao, LocalDate data) {
+
 		LocalDate fechamento = montaDataFechamento(cartao, data);
+
 		if (data.isAfter(fechamento)) {
 			fechamento = fechamento.plusMonths(1);
 		}
-		
+
 		LocalDate vencimento = somaVencimento(fechamento, cartao.getDiaVencimento());
-		
-		Fatura fatura = faturaRepository
-				.findByAnoAndMesAndCartaoId(vencimento.getYear(), vencimento.getMonthValue(),
+
+		Fatura fatura = faturaRepository.findByAnoAndMesAndCartaoId(vencimento.getYear(), vencimento.getMonthValue(),
 				cartao.getId());
 
 		if (fatura != null) {
 			return fatura;
 		}
-		
+
 		return criaFatura(fechamento, cartao);
 	}
 
 	private Fatura criaFatura(LocalDate data, Cartao cartao) {
-		
+
 		LocalDate vencimento = somaVencimento(data, cartao.getDiaVencimento());
 
 		Fatura fatura = new FaturaBuilder()
@@ -115,11 +117,3 @@ public class FaturaService {
 	}
 
 }
-
-
-
-
-
-
-
-
