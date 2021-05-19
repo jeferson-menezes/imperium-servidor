@@ -63,14 +63,17 @@ public class DespesaController {
 	public ResponseEntity<?> adicionar(@RequestBody @Valid DespesaForm form, UriComponentsBuilder uriBuilder) {
 
 		Optional<Conta> optConta = contaRepository.findById(form.getContaId());
+		
 		if (!optConta.isPresent())
 			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
+		
 		Conta conta = optConta.get();
 
 		Optional<Categoria> optCategoria = categoriaRepository.findById(form.getCategoriaId());
 
 		if (!optCategoria.isPresent())
 			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
+		
 		Categoria categoria = optCategoria.get();
 
 		if (form.isConcluida())
@@ -82,7 +85,7 @@ public class DespesaController {
 		despesa.setConta(conta);
 		despesaService.adicionaDespesa(despesa);
 		
-		historiaService.adiciona(new Historia(despesa, Natureza.DESPESA, conta.getUsuario()));
+		historiaService.adiciona(new Historia(despesa, Natureza.DESPESA, conta.getUsuario(), conta));
 
 		URI uri = uriBuilder.path("/despesas/{id}").buildAndExpand(despesa.getId()).toUri();
 		return ResponseEntity.created(uri).body(new DespesaDto(despesa));
@@ -105,7 +108,7 @@ public class DespesaController {
 		despesa.setCategoria(categoria.get());
 		
 		
-		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario()));
+		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
 
 		return ResponseEntity.ok(new DespesaDto(despesa));
 	}
@@ -126,7 +129,7 @@ public class DespesaController {
 
 		despesa.setConcluida(true);
 		
-		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario()));
+		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
 
 		return ResponseEntity.ok(new DespesaDto(despesa));
 	}
@@ -154,6 +157,8 @@ public class DespesaController {
 		}
 
 		despesa.setConta(conta);
+		
+		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
 
 		return ResponseEntity.ok(new DespesaDto(despesa));
 	}
@@ -173,7 +178,7 @@ public class DespesaController {
 
 		despesa.setValor(form.getValor());
 		
-		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario()));
+		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
 		
 		return ResponseEntity.ok(new DespesaDto(despesa));
 	}
@@ -190,7 +195,7 @@ public class DespesaController {
 			despesa.getConta().soma(despesa.getValor());
 
 		despesa.setDeletado(true);
-		historiaService.exclui(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario()));
+		historiaService.exclui(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
 		return ResponseEntity.ok().build();
 	}
 

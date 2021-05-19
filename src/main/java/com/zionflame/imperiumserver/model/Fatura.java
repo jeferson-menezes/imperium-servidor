@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.zionflame.imperiumserver.helper.DateHelper;
 import com.zionflame.imperiumserver.model.enums.StatusFatura;
 
 import lombok.Getter;
@@ -53,6 +54,10 @@ public class Fatura implements Serializable {
 		this.mes = mes;
 		this.status = status;
 		this.cartao = cartao;
+	}
+
+	public String getMesExtenso() {
+		return DateHelper.getMesExtenso(mes);
 	}
 
 }

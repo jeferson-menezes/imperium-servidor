@@ -80,7 +80,7 @@ public class ReceitaController {
 		receita.setConta(conta);
 		receitaService.adicionaReceita(receita);
 		
-		historiaService.adiciona(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario() ));
+		historiaService.adiciona(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario(), conta));
 
 		URI uri = uriBuilder.path("/receitas/{id}").buildAndExpand(receita.getId()).toUri();
 		return ResponseEntity.created(uri).body(new ReceitaDto(receita));
@@ -102,7 +102,7 @@ public class ReceitaController {
 		receita.setHora(form.getHora());
 		receita.setCategoria(categoria.get());
 		
-		historiaService.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario()));
+		historiaService.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario(), receita.getConta()));
 
 		return ResponseEntity.ok(new ReceitaDto(receita));
 	}
@@ -121,6 +121,8 @@ public class ReceitaController {
 		receita.getConta().soma(receita.getValor());
 		receita.setConcluida(true);
 
+		historiaService.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario(), receita.getConta()));
+		
 		return ResponseEntity.ok(new ReceitaDto(receita));
 	}
 
@@ -163,7 +165,7 @@ public class ReceitaController {
 
 		receita.setValor(form.getValor());
 		
-		historiaService.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario()));
+		historiaService.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario(), receita.getConta()));
 
 		return ResponseEntity.ok(new ReceitaDto(receita));
 	}
@@ -183,7 +185,7 @@ public class ReceitaController {
 
 		receita.setDeletado(true);
 		
-		historiaService.exclui(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario()));
+		historiaService.exclui(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario(), receita.getConta()));
 		
 		return ResponseEntity.ok().build();
 	}

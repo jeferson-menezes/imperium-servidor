@@ -38,12 +38,15 @@ public class Historia {
 
 	private String descricao;
 	private BigDecimal valor;
+	@ManyToOne
+	private Conta conta;
+	
 
 	public Historia() {
 
 	}
 
-	public Historia(Transacao transacao, Natureza natureza, Usuario usuario) {
+	public Historia(Transacao transacao, Natureza natureza, Usuario usuario, Conta conta) {
 		this.data = transacao.getData();
 		this.hora = transacao.getHora();
 		this.transacaoId = transacao.getId();
@@ -51,5 +54,6 @@ public class Historia {
 		this.valor = transacao.getValor();
 		this.usuario = usuario;
 		this.natureza = natureza;
+		this.conta = conta;
 	}
 }
