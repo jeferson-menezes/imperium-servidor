@@ -24,7 +24,7 @@ public class HistoriaController {
 
 	@GetMapping("/usuario/{usuarioId}")
 	public ResponseEntity<?> listarPorUsuario(@PathVariable Long usuarioId,
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+			@PageableDefault(sort = {"data", "hora"}, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 		
 		Page<Historia> historias = historiaRepository.findByUsuarioId(usuarioId, pageable);
 		

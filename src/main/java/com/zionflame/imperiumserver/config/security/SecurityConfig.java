@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.zionflame.imperiumserver.repository.UsuarioRepository;
 
+
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -54,6 +55,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	public void configure(WebSecurity web) throws Exception {
 		web.ignoring().antMatchers("/**.html", "/v2/api-docs", "/webjars/**", "/configuration/**",
 				"/swagger-resources/**");
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(new BCryptPasswordEncoder().encode("27102017"));
 	}
 
 }

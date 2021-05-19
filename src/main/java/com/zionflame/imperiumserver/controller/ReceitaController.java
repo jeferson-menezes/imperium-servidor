@@ -54,7 +54,7 @@ public class ReceitaController {
 
 	@Autowired
 	private ReceitaService receitaService;
-	
+
 	@Autowired
 	private HistoriaService historiaService;
 
@@ -79,8 +79,8 @@ public class ReceitaController {
 		receita.setCategoria(categoria);
 		receita.setConta(conta);
 		receitaService.adicionaReceita(receita);
-		
-		historiaService.adiciona(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario() ));
+
+		historiaService.adiciona(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario()));
 
 		URI uri = uriBuilder.path("/receitas/{id}").buildAndExpand(receita.getId()).toUri();
 		return ResponseEntity.created(uri).body(new ReceitaDto(receita));
@@ -101,7 +101,7 @@ public class ReceitaController {
 		receita.setData(form.getData());
 		receita.setHora(form.getHora());
 		receita.setCategoria(categoria.get());
-		
+
 		historiaService.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario()));
 
 		return ResponseEntity.ok(new ReceitaDto(receita));
@@ -162,7 +162,7 @@ public class ReceitaController {
 		}
 
 		receita.setValor(form.getValor());
-		
+
 		historiaService.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario()));
 
 		return ResponseEntity.ok(new ReceitaDto(receita));
@@ -182,16 +182,16 @@ public class ReceitaController {
 		}
 
 		receita.setDeletado(true);
-		
+
 		historiaService.exclui(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario()));
-		
+
 		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/usuario/{usuarioId}")
 	public ResponseEntity<?> listar(@PathVariable Long usuarioId,
 
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+			@PageableDefault(sort = {"data","hora"}, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 
 		Page<Receita> receitas = receitaService.listarPorUsuario(usuarioId, pageable);
 		return ResponseEntity.ok(ReceitaDto.converter(receitas));
@@ -207,14 +207,14 @@ public class ReceitaController {
 
 	@GetMapping("/filtra/usuario/{id}/data/{data}")
 	public ResponseEntity<?> listarPorData(@PathVariable Long id, @PathVariable String data,
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+			@PageableDefault(sort = {"data","hora"}, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 		Page<Receita> receitas = receitaService.listarPorUsuarioData(id, DateHelper.data(data), pageable);
 		return ResponseEntity.ok(ReceitaDto.converter(receitas));
 	}
 
 	@GetMapping("/filtra/usuario/{id}/descricao/{descricao}")
 	public ResponseEntity<?> listarPorDescricao(@PathVariable Long id, @PathVariable String descricao,
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+			@PageableDefault(sort = {"data","hora"}, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 
 		Page<Receita> receitas = receitaService.listarPorUsuarioDescricao(id, descricao, pageable);
 		return ResponseEntity.ok(ReceitaDto.converter(receitas));
@@ -222,7 +222,7 @@ public class ReceitaController {
 
 	@GetMapping("/filtra/usuario/{id}/mes/{mes}")
 	public ResponseEntity<?> filtrarPorMes(@PathVariable Long id, @PathVariable String mes,
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+			@PageableDefault(sort = {"data","hora"}, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 		LocalDate[] periodo = DateHelper.mes(mes);
 		Page<Receita> receitas = receitaService.filtrarPorUsuarioMes(id, periodo[0], periodo[1], pageable);
 		return ResponseEntity.ok(ReceitaDto.converter(receitas));

@@ -55,7 +55,7 @@ public class DespesaController {
 
 	@Autowired
 	private DespesaService despesaService;
-	
+
 	@Autowired
 	private HistoriaService historiaService;
 
@@ -81,7 +81,7 @@ public class DespesaController {
 		despesa.setCategoria(categoria);
 		despesa.setConta(conta);
 		despesaService.adicionaDespesa(despesa);
-		
+
 		historiaService.adiciona(new Historia(despesa, Natureza.DESPESA, conta.getUsuario()));
 
 		URI uri = uriBuilder.path("/despesas/{id}").buildAndExpand(despesa.getId()).toUri();
@@ -103,8 +103,7 @@ public class DespesaController {
 		despesa.setData(form.getData());
 		despesa.setHora(form.getHora());
 		despesa.setCategoria(categoria.get());
-		
-		
+
 		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario()));
 
 		return ResponseEntity.ok(new DespesaDto(despesa));
@@ -125,7 +124,7 @@ public class DespesaController {
 			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
 
 		despesa.setConcluida(true);
-		
+
 		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario()));
 
 		return ResponseEntity.ok(new DespesaDto(despesa));
@@ -172,9 +171,9 @@ public class DespesaController {
 		}
 
 		despesa.setValor(form.getValor());
-		
+
 		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario()));
-		
+
 		return ResponseEntity.ok(new DespesaDto(despesa));
 	}
 
@@ -195,8 +194,8 @@ public class DespesaController {
 	}
 
 	@GetMapping("/usuario/{usuarioId}")
-	public ResponseEntity<?> listar(@PathVariable Long usuarioId,
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+	public ResponseEntity<?> listar(@PathVariable Long usuarioId, @PageableDefault(sort = { "data",
+			"hora" }, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 
 		Page<Despesa> despesas = despesaService.listarPorUsuario(usuarioId, pageable);
 		return ResponseEntity.ok(DespesaDto.converter(despesas));
@@ -212,7 +211,7 @@ public class DespesaController {
 
 	@GetMapping("/filtra/usuario/{id}/data/{data}")
 	public ResponseEntity<?> listarPorData(@PathVariable Long id, @PathVariable String data,
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+			@PageableDefault(sort = {"data","hora"}, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 		Page<Despesa> despesas = despesaService.listarPorUsuarioData(id, DateHelper.data(data), pageable);
 		return ResponseEntity.ok(DespesaDto.converter(despesas));
 	}
@@ -220,7 +219,7 @@ public class DespesaController {
 	@GetMapping("/filtra/usuario/{id}/descricao/{descricao}")
 	public ResponseEntity<?> filtrarPorDescricao(@PathVariable Long id, @PathVariable String descricao,
 
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+			@PageableDefault(sort = {"data","hora"}, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 
 		Page<Despesa> despesas = despesaService.listarPorUsuarioDescricao(id, descricao, pageable);
 		return ResponseEntity.ok(DespesaDto.converter(despesas));
@@ -228,7 +227,7 @@ public class DespesaController {
 
 	@GetMapping("/filtra/usuario/{id}/mes/{mes}")
 	public ResponseEntity<?> filtrarPorMes(@PathVariable Long id, @PathVariable String mes,
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+			@PageableDefault(sort = {"data","hora"}, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 		LocalDate[] periodo = DateHelper.mes(mes);
 		Page<Despesa> despesas = despesaService.filtrarPorUsuarioMes(id, periodo[0], periodo[1], pageable);
 		return ResponseEntity.ok(DespesaDto.converter(despesas));
