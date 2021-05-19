@@ -30,22 +30,27 @@ public class DespesaService {
 	}
 
 	public Page<Despesa> listarPorUsuario(Long usuarioId, Pageable pageable) {
+		
 		return despesaRepository.findByContaUsuarioId(usuarioId, pageable);
 	}
 
 	public Page<Despesa> listarPorUsuarioData(Long id, LocalDate data, Pageable pageable) {
+	
 		return despesaRepository.findByDataAndContaUsuarioId(data, id, pageable);
 	}
 
 	public Page<Despesa> listarPorUsuarioDescricao(Long id, String descricao, Pageable pageable) {
+		
 		return despesaRepository.findByContaUsuarioIdAndDescricaoContaining(id, descricao, pageable);
 	}
 
 	public Page<Despesa> filtrarPorUsuarioMes(Long id, LocalDate inicio, LocalDate fim, Pageable pageable) {
+		
 		return despesaRepository.findByDataBetweenAndContaUsuarioId(inicio, fim, id, pageable);
 	}
 
 	public List<Despesa> listarPorUsuarioMes(Long id, LocalDate inicio, LocalDate fim) {
 		return despesaRepository.findByDataBetweenAndContaUsuarioId(inicio, fim, id);
 	}
+
 }
