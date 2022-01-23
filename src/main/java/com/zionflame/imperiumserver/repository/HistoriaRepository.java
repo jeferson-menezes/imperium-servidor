@@ -16,4 +16,6 @@ public interface HistoriaRepository extends JpaRepository<Historia, Long>{
 
 	Optional<Historia> findByNaturezaAndTransacaoIdAndUsuarioId(Natureza natureza, Long transacaoId, Long id);
 
+	Page<Historia> findByContaId(Long contaId, Pageable pageable);
+
 }

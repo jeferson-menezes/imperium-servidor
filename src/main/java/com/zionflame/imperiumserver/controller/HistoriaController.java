@@ -23,11 +23,21 @@ public class HistoriaController {
 	private HistoriaRepository historiaRepository;
 
 	@GetMapping("/usuario/{usuarioId}")
-	public ResponseEntity<?> listarPorUsuario(@PathVariable Long usuarioId,
-			@PageableDefault(sort = {"data", "hora"}, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
-		
+	public ResponseEntity<?> listarPorUsuario(@PathVariable Long usuarioId, @PageableDefault(sort = { "data",
+			"hora" }, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+
 		Page<Historia> historias = historiaRepository.findByUsuarioId(usuarioId, pageable);
-		
+
 		return ResponseEntity.ok(HistoriaDto.converter(historias));
 	}
+
+	@GetMapping("/conta/{contaId}")
+	public ResponseEntity<?> listarPorConta(@PathVariable Long contaId, @PageableDefault(sort = { "data",
+			"hora" }, direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+
+		Page<Historia> historias = historiaRepository.findByContaId(contaId, pageable);
+
+		return ResponseEntity.ok(HistoriaDto.converter(historias));
+	}
+
 }
