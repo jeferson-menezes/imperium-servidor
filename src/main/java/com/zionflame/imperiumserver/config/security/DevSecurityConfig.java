@@ -19,8 +19,8 @@ import com.zionflame.imperiumserver.repository.UsuarioRepository;
 
 @EnableWebSecurity
 @Configuration
-@Profile("prod")
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@Profile("dev")
+public class DevSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private AuthService authService;
@@ -32,30 +32,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	private UsuarioRepository usuarioRepository;
 
 	@Override
-	@Bean
-	protected AuthenticationManager authenticationManager() throws Exception {
-		return super.authenticationManager();
-	}
-
-	@Override
-	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(authService).passwordEncoder(new BCryptPasswordEncoder());
-	}
-
-	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers(HttpMethod.POST, "/auth").permitAll()
-				.antMatchers(HttpMethod.GET, "/actuator/**").permitAll().anyRequest().authenticated().and().csrf()
-				.disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-				.addFilterBefore(new AutenticacaoTokenFilter(tokenService, usuarioRepository),
-						UsernamePasswordAuthenticationFilter.class)
-				.addFilterAfter(new CorsFilter(), UsernamePasswordAuthenticationFilter.class);
+		http.authorizeRequests()
+				.antMatchers("/**").permitAll()
+				.and().csrf().disable();
 	}
 
-//	@Override
-//	public void configure(WebSecurity web) throws Exception {
-//		web.ignoring().antMatchers("/**.html", "/v2/api-docs", "/webjars/**", "/configuration/**",
-//				"/swagger-resources/**");
-//	}
+	@Override
+	public void configure(WebSecurity web) throws Exception {
+		web.ignoring().antMatchers("/**.html", "/v2/api-docs", "/webjars/**", "/configuration/**",
+				"/swagger-resources/**");
+	}
 
 }
