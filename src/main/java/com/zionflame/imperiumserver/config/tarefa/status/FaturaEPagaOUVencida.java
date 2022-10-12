@@ -11,6 +11,7 @@ public class FaturaEPagaOUVencida extends FaturaAtualizou {
 
 	@Override
 	public StatusFatura verifica(Fatura fatura) {
+		
 		if (fatura.getStatus() == StatusFatura.PAGA) {
 			return StatusFatura.PAGA;
 		}

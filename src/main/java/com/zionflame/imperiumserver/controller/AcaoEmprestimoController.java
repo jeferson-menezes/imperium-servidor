@@ -7,42 +7,47 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.zionflame.imperiumserver.config.exeption.BadRequestException;
 import com.zionflame.imperiumserver.controller.dto.MensagemDto;
 import com.zionflame.imperiumserver.controller.form.AcaoEmprestimoDto;
 import com.zionflame.imperiumserver.controller.form.AcaoEmprestimoForm;
+import com.zionflame.imperiumserver.helper.ConstantsHelper;
 import com.zionflame.imperiumserver.model.AcaoEmprestimo;
 import com.zionflame.imperiumserver.model.Conta;
 import com.zionflame.imperiumserver.model.Emprestimo;
+import com.zionflame.imperiumserver.model.Usuario;
 import com.zionflame.imperiumserver.model.enums.NaturezaEmprestimo;
+import com.zionflame.imperiumserver.repository.ContaRepository;
 import com.zionflame.imperiumserver.service.AcaoEmprestimoService;
-import com.zionflame.imperiumserver.service.ContaService;
 import com.zionflame.imperiumserver.service.EmprestimoService;
 
 @RestController
 @RequestMapping("/acoes/emprestimo")
-public class AcaoEmprestimoController {
+public class AcaoEmprestimoController implements ConstantsHelper {
 
 	@Autowired
 	private AcaoEmprestimoService acaoService;
 
 	@Autowired
-	private ContaService contaService;
+	private ContaRepository contaRepository;
 
 	@Autowired
 	private EmprestimoService emprestimoService;
 
 	@PostMapping
-	public ResponseEntity<?> adicionar(@RequestBody AcaoEmprestimoForm form) {
+	public ResponseEntity<?> adicionar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+			@RequestBody AcaoEmprestimoForm form) {
 
-		Conta conta = contaService.buscarPorId(form.getContaId());
-		if (conta == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
-
+		Conta conta = contaRepository.findByIdAndUsuario(form.getContaId(), usuario)
+				.orElseThrow(() -> new BadRequestException("Conta inválida"));
+		
 		Emprestimo emprestimo = emprestimoService.buscarPorId(form.getEmprestimoId());
+		
 		if (emprestimo == null)
 			return ResponseEntity.badRequest().body(new MensagemDto("Emprestimo inválido!"));
 
@@ -74,7 +79,7 @@ public class AcaoEmprestimoController {
 		} else {
 			acao.getConta().soma(acao.getValor());
 		}
-		
+
 		acaoService.excluir(acao);
 		return ResponseEntity.ok().build();
 	}

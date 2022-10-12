@@ -23,7 +23,6 @@ import com.zionflame.imperiumserver.repository.UsuarioRepository;
 
 @RestController
 @RequestMapping("/auth")
-@Profile("prod")
 public class AuthController {
 
 	@Autowired

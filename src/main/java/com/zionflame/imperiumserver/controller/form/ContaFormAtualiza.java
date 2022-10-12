@@ -1,5 +1,7 @@
 package com.zionflame.imperiumserver.controller.form;
 
+import java.math.BigDecimal;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,4 +14,5 @@ public class ContaFormAtualiza {
 	private boolean incluiSoma;
 	private Long tipoContaId;
 	private boolean ativo;
+	private BigDecimal saldo;
 }

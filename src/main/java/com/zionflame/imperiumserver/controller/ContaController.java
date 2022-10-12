@@ -1,7 +1,8 @@
 package com.zionflame.imperiumserver.controller;
 
 import java.net.URI;
-import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,78 +11,78 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.zionflame.imperiumserver.config.exeption.BadRequestException;
 import com.zionflame.imperiumserver.controller.dto.ContaDetalhesDto;
 import com.zionflame.imperiumserver.controller.dto.ContaDto;
-import com.zionflame.imperiumserver.controller.dto.MensagemDto;
 import com.zionflame.imperiumserver.controller.form.ContaForm;
 import com.zionflame.imperiumserver.controller.form.ContaFormAtualiza;
 import com.zionflame.imperiumserver.controller.form.SaldoForm;
+import com.zionflame.imperiumserver.helper.ConstantsHelper;
 import com.zionflame.imperiumserver.model.Conta;
-import com.zionflame.imperiumserver.service.ContaService;
+import com.zionflame.imperiumserver.model.TipoConta;
+import com.zionflame.imperiumserver.model.Usuario;
+import com.zionflame.imperiumserver.repository.ContaRepository;
+import com.zionflame.imperiumserver.repository.TipoContaRepository;
 
 @RestController
 @RequestMapping("/contas")
-public class ContaController {
+public class ContaController implements ConstantsHelper {
 
 	@Autowired
-	private ContaService contaService;
+	private ContaRepository contaRepository;
+
+	@Autowired
+	private TipoContaRepository tipoContaRepository;
 
 	@PostMapping
-	public ResponseEntity<?> adicionar(@RequestBody ContaForm form, UriComponentsBuilder uriBuilder) {
-		Conta conta = contaService.adicionarConta(form);
-		if (conta == null) {
-			return ResponseEntity.badRequest().body(new MensagemDto("Usuário o tipo conta inválido!"));
-		}
+	public ResponseEntity<?> adicionar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+			@RequestBody @Valid ContaForm form, UriComponentsBuilder uriBuilder) {
+
+		Conta conta = contaRepository.save(form.converter(tipoContaRepository, usuario));
+
 		URI uri = uriBuilder.path("/usuarios/{id}").buildAndExpand(conta.getId()).toUri();
+
 		return ResponseEntity.created(uri).body(new ContaDto(conta));
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody ContaFormAtualiza form) {
-		Conta conta = contaService.atualizaConta(id, form);
-		if (conta == null) {
-			return ResponseEntity.badRequest().body(new MensagemDto("Conta o tipo conta inválido!"));
-		}
-		return ResponseEntity.ok(new ContaDto(conta));
+	public ResponseEntity<?> atualizar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+			@RequestBody @Valid ContaFormAtualiza form, @PathVariable Long id) {
+
+		Conta conta = contaRepository.findByIdAndUsuario(id, usuario)
+				.orElseThrow(() -> new BadRequestException("Conta inválida"));
+
+		TipoConta tipoConta = tipoContaRepository.findById(form.getTipoContaId())
+				.orElseThrow(() -> new BadRequestException("Tipo Conta inválida"));
+
+		conta.setNome(form.getNome());
+		conta.setDescricao(form.getDescricao());
+		conta.setIncluiSoma(form.isIncluiSoma());
+		conta.setAtivo(form.isAtivo());
+		conta.setTipo(tipoConta);
+		conta.setSaldo(form.getSaldo());
+		conta.setAtivo(form.isAtivo());
+
+		return ResponseEntity.ok(new ContaDto(contaRepository.save(conta)));
 	}
 
-	@PatchMapping("/{id}")
-	public ResponseEntity<?> alteraSaldo(@PathVariable Long id, @RequestBody SaldoForm form) {
-		Conta conta = contaService.alteraSaldo(id, form.getSaldo());
-		if (conta == null) {
-			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
-		}
-		return ResponseEntity.ok(new ContaDto(conta));
-	}
-
-	@PatchMapping("/{id}/inativa")
-	public ResponseEntity<?> desativar(@PathVariable Long id) {
-		Conta conta = contaService.inativar(id);
-		if (conta == null) {
-			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
-		}
-		return ResponseEntity.ok(new ContaDto(conta));
-	}
-
-	@GetMapping("/usuario/{usuarioId}")
-	public ResponseEntity<?> listarPorUsuario(@PathVariable Long usuarioId) {
-		List<Conta> contas = contaService.listarPorUsuario(usuarioId);
-		return ResponseEntity.ok(ContaDto.converter(contas));
+	@GetMapping
+	public ResponseEntity<?> listarPorUsuario(@RequestAttribute(USUARIO_ID_ATT_REQ) Long usuarioId) {
+		return ResponseEntity.ok(ContaDto.converter(contaRepository.findByUsuarioId(usuarioId)));
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> detalhar(@PathVariable Long id) {
-		Conta conta = contaService.buscarPorId(id);
-		if (conta == null) {
-			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
-		}
+	public ResponseEntity<?> detalhar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario, @PathVariable Long id) {
+		Conta conta = contaRepository.findByIdAndUsuario(id, usuario)
+				.orElseThrow(() -> new BadRequestException("Conta inválida"));
+
 		return ResponseEntity.ok(new ContaDetalhesDto(conta));
 	}
-
 
 }

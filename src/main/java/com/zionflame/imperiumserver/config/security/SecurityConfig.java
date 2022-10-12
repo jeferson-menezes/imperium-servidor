@@ -19,7 +19,6 @@ import com.zionflame.imperiumserver.repository.UsuarioRepository;
 
 @EnableWebSecurity
 @Configuration
-@Profile("prod")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
@@ -44,8 +43,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers(HttpMethod.POST, "/auth").permitAll()
-				.antMatchers(HttpMethod.GET, "/actuator/**").permitAll().anyRequest().authenticated().and().csrf()
+		http.authorizeRequests()
+		.antMatchers(HttpMethod.POST, "/auth/**").permitAll()
+		.antMatchers(HttpMethod.GET, "/actuator/**").permitAll().anyRequest().authenticated().and().csrf()
 				.disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 				.addFilterBefore(new AutenticacaoTokenFilter(tokenService, usuarioRepository),
 						UsernamePasswordAuthenticationFilter.class)
@@ -57,5 +57,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //		web.ignoring().antMatchers("/**.html", "/v2/api-docs", "/webjars/**", "/configuration/**",
 //				"/swagger-resources/**");
 //	}
+
+	public static void main(String[] args) {
+		System.out.println(new BCryptPasswordEncoder().encode("123"));
+	}
 
 }
