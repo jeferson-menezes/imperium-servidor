@@ -2,6 +2,8 @@ package com.zionflame.imperiumserver.controller.form;
 
 import java.math.BigDecimal;
 
+import javax.validation.constraints.NotNull;
+
 import com.zionflame.imperiumserver.config.exeption.BadRequestException;
 import com.zionflame.imperiumserver.model.Conta;
 import com.zionflame.imperiumserver.model.TipoConta;
@@ -15,12 +17,18 @@ import lombok.Setter;
 @Setter
 public class ContaForm {
 
+	@NotNull
 	private String nome;
+	@NotNull
 	private String descricao;
+	@NotNull
 	private BigDecimal saldo;
-	private boolean incluiSoma;
+	@NotNull
+	private Boolean incluiSoma;
+	@NotNull
 	private Long tipoContaId;
-	private boolean ativo;
+	@NotNull
+	private Boolean ativo;
 
 	public Conta converter(TipoContaRepository tipoContaRepository, Usuario usuario) {
 		TipoConta tipoConta = tipoContaRepository.findById(tipoContaId)

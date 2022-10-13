@@ -7,7 +7,6 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,8 +20,6 @@ import com.zionflame.imperiumserver.config.exeption.BadRequestException;
 import com.zionflame.imperiumserver.controller.dto.ContaDetalhesDto;
 import com.zionflame.imperiumserver.controller.dto.ContaDto;
 import com.zionflame.imperiumserver.controller.form.ContaForm;
-import com.zionflame.imperiumserver.controller.form.ContaFormAtualiza;
-import com.zionflame.imperiumserver.controller.form.SaldoForm;
 import com.zionflame.imperiumserver.helper.ConstantsHelper;
 import com.zionflame.imperiumserver.model.Conta;
 import com.zionflame.imperiumserver.model.TipoConta;
@@ -53,7 +50,7 @@ public class ContaController implements ConstantsHelper {
 
 	@PutMapping("/{id}")
 	public ResponseEntity<?> atualizar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
-			@RequestBody @Valid ContaFormAtualiza form, @PathVariable Long id) {
+			@RequestBody @Valid ContaForm form, @PathVariable Long id) {
 
 		Conta conta = contaRepository.findByIdAndUsuario(id, usuario)
 				.orElseThrow(() -> new BadRequestException("Conta inválida"));
@@ -63,11 +60,10 @@ public class ContaController implements ConstantsHelper {
 
 		conta.setNome(form.getNome());
 		conta.setDescricao(form.getDescricao());
-		conta.setIncluiSoma(form.isIncluiSoma());
-		conta.setAtivo(form.isAtivo());
+		conta.setIncluiSoma(form.getIncluiSoma());
+		conta.setAtivo(form.getAtivo());
 		conta.setTipo(tipoConta);
 		conta.setSaldo(form.getSaldo());
-		conta.setAtivo(form.isAtivo());
 
 		return ResponseEntity.ok(new ContaDto(contaRepository.save(conta)));
 	}

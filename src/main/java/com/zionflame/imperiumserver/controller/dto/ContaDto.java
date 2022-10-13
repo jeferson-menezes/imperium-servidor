@@ -21,15 +21,14 @@ public class ContaDto {
 	private String tipoContaCor;
 	private boolean incluiSoma;
 	private boolean ativo;
-	
 
 	public ContaDto(Conta conta) {
 		id = conta.getId();
 		nome = conta.getNome();
 		descricao = conta.getDescricao();
 		saldo = conta.getSaldo();
-		ativo = conta.isAtivo();
-		incluiSoma = conta.isIncluiSoma();
+		ativo = conta.getAtivo();
+		incluiSoma = conta.getIncluiSoma();
 		tipoContaNome = conta.getTipo().getNome();
 		tipoContaIcone = conta.getTipo().getIcone();
 		tipoContaCor = conta.getTipo().getCor();

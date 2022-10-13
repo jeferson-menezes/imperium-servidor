@@ -23,8 +23,8 @@ public class ContaDetalhesDto {
 		nome = conta.getNome();
 		descricao = conta.getDescricao();
 		saldo = conta.getSaldo();
-		ativo = conta.isAtivo();
-		incluiSoma = conta.isIncluiSoma();
+		ativo = conta.getAtivo();
+		incluiSoma = conta.getIncluiSoma();
 		tipo = conta.getTipo();
 	}
 

@@ -24,7 +24,7 @@ public class CategoriaDto {
 		nome = categoria.getNome();
 		descricao = categoria.getDescricao();
 		natureza = categoria.getNatureza();
-		ativo = categoria.isAtivo();
+		ativo = categoria.getAtivo();
 		icone = categoria.getIcone();
 		cor = categoria.getCor();
 		

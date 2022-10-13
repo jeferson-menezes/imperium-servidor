@@ -28,7 +28,7 @@ public class Categoria extends Visual implements Serializable {
 	private String descricao;
 	@Enumerated(EnumType.STRING)
 	private NaturezaCategoria natureza;
-	private boolean ativo;
+	private Boolean ativo;
 
 	public Categoria() {
 

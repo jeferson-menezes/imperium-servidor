@@ -26,8 +26,8 @@ public class Conta implements Serializable {
 	private String nome;
 	private BigDecimal saldo;
 	private String descricao;
-	private boolean incluiSoma;
-	private boolean ativo;
+	private Boolean incluiSoma;
+	private Boolean ativo;
 	@ManyToOne
 	private Usuario usuario;
 	@OneToOne
