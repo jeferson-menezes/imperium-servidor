@@ -65,4 +65,10 @@ public class CategoriaController {
 		return ResponseEntity.ok(CategoriaDto.converter(categoriaRepository.findAll()));
 	}
 
+	@GetMapping("/{id}")
+	public ResponseEntity<?> detalhar(@PathVariable Long id) {
+		return ResponseEntity.ok(new CategoriaDto(
+				categoriaRepository.findById(id).orElseThrow(() -> new BadRequestException("Categoria inválida!"))));
+	}
+
 }
