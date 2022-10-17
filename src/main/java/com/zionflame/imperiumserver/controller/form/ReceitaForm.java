@@ -9,11 +9,10 @@ import lombok.Setter;
 @Setter
 public class ReceitaForm extends TransacaoForm {
 
-	private boolean concluida;
 	private Long categoriaId;
 	private Long contaId;
 
 	public Receita converter() {
-		return new Receita(valor, descricao, data, hora, concluida);
+		return new Receita(valor, descricao, data, hora, Boolean.TRUE);
 	}
 }

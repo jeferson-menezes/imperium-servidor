@@ -6,10 +6,11 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.zionflame.imperiumserver.model.Receita;
 
-public interface ReceitaRepository extends JpaRepository<Receita, Long> {
+public interface ReceitaRepository extends JpaRepository<Receita, Long>, JpaSpecificationExecutor<Receita> {
 
 	Page<Receita> findByContaUsuarioId(Long usuarioId, Pageable pageable);
 

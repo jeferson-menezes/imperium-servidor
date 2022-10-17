@@ -23,7 +23,6 @@ public class TransacaoDto implements Serializable {
 	protected LocalTime	 hora;
 
 	public TransacaoDto(Transacao transacao) {
-
 		this.id = transacao.getId();
 		this.valor = transacao.getValor();
 		this.descricao = transacao.getDescricao();

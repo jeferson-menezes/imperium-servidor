@@ -4,7 +4,6 @@ package com.zionflame.imperiumserver.controller;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -12,40 +11,44 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.zionflame.imperiumserver.config.exeption.BadRequestException;
 import com.zionflame.imperiumserver.controller.dto.MensagemDto;
 import com.zionflame.imperiumserver.controller.dto.ReceitaDetalhesDto;
 import com.zionflame.imperiumserver.controller.dto.ReceitaDto;
-import com.zionflame.imperiumserver.controller.form.ContaIdForm;
 import com.zionflame.imperiumserver.controller.form.ReceitaForm;
 import com.zionflame.imperiumserver.controller.form.TransacaoFormAtualiza;
-import com.zionflame.imperiumserver.controller.form.ValorForm;
+import com.zionflame.imperiumserver.helper.ConstantsHelper;
 import com.zionflame.imperiumserver.helper.DateHelper;
 import com.zionflame.imperiumserver.model.Categoria;
 import com.zionflame.imperiumserver.model.Conta;
 import com.zionflame.imperiumserver.model.Historia;
 import com.zionflame.imperiumserver.model.Receita;
+import com.zionflame.imperiumserver.model.Usuario;
 import com.zionflame.imperiumserver.model.enums.Natureza;
 import com.zionflame.imperiumserver.repository.CategoriaRepository;
 import com.zionflame.imperiumserver.repository.ContaRepository;
+import com.zionflame.imperiumserver.repository.ReceitaRepository;
+import com.zionflame.imperiumserver.repository.specification.ReceitaSpecification;
 import com.zionflame.imperiumserver.service.HistoriaService;
 import com.zionflame.imperiumserver.service.ReceitaService;
 
 @RestController
 @RequestMapping("/receitas")
-public class ReceitaController {
+public class ReceitaController implements ConstantsHelper {
 
 	@Autowired
 	private ContaRepository contaRepository;
@@ -59,22 +62,27 @@ public class ReceitaController {
 	@Autowired
 	private HistoriaService historiaService;
 
+	@Autowired
+	private ReceitaRepository receitaRepository;
+
+	@GetMapping("/page")
+	public ResponseEntity<?> listar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+		return ResponseEntity.ok(ReceitaDto.converter(
+				receitaRepository.findAll(Specification.where(ReceitaSpecification.usuarioEqual(usuario)), pageable)));
+	}
+
 	@PostMapping
-	public ResponseEntity<?> adicionar(@RequestBody ReceitaForm form, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<?> adicionar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+			@RequestBody ReceitaForm form, UriComponentsBuilder uriBuilder) {
 
-		Optional<Conta> optConta = contaRepository.findById(form.getContaId());
-		if (!optConta.isPresent())
-			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
-		Conta conta = optConta.get();
+		Conta conta = contaRepository.findByIdAndUsuario(form.getContaId(), usuario)
+				.orElseThrow(() -> new BadRequestException("Conta inválida"));
 
-		Optional<Categoria> optCategoria = categoriaRepository.findById(form.getCategoriaId());
+		Categoria categoria = categoriaRepository.findById(form.getCategoriaId())
+				.orElseThrow(() -> new BadRequestException("Categoria inválida!"));
 
-		if (!optCategoria.isPresent())
-			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
-		Categoria categoria = optCategoria.get();
-
-		if (form.isConcluida())
-			conta.soma(form.getValor());
+		conta.soma(form.getValor());
 
 		Receita receita = form.converter();
 		receita.setCategoria(categoria);
@@ -89,84 +97,28 @@ public class ReceitaController {
 
 	@Transactional
 	@PutMapping("/{id}")
-	public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody TransacaoFormAtualiza form) {
-		Receita receita = receitaService.buscarPorId(id);
-		if (receita == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
+	public ResponseEntity<?> atualizar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario, @PathVariable Long id,
+			@RequestBody TransacaoFormAtualiza form) {
+		Receita receita = receitaRepository.findById(id).orElseThrow(() -> new BadRequestException("Receita inválida"));
 
-		Optional<Categoria> categoria = categoriaRepository.findById(form.getCategoriaId());
-		if (!categoria.isPresent())
-			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
+		Categoria categoria = categoriaRepository.findById(form.getCategoriaId())
+				.orElseThrow(() -> new BadRequestException("Categoria inválida!"));
+
+		Conta conta = contaRepository.findByIdAndUsuario(form.getContaId(), usuario)
+				.orElseThrow(() -> new BadRequestException("Conta inválida"));
 
 		receita.setDescricao(form.getDescricao());
 		receita.setData(form.getData());
 		receita.setHora(form.getHora());
-		receita.setCategoria(categoria.get());
+		receita.setCategoria(categoria);
 
-		historiaService
-				.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario(), receita.getConta()));
-
-		return ResponseEntity.ok(new ReceitaDto(receita));
-	}
-
-	@Transactional
-	@PatchMapping("/{id}/finaliza")
-	public ResponseEntity<?> finaliza(@PathVariable Long id) {
-
-		Receita receita = receitaService.buscarPorId(id);
-		if (receita == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
-
-		if (receita.isConcluida())
-			return ResponseEntity.badRequest().body(new MensagemDto("A receita já foi recebida!"));
-
-		receita.getConta().soma(receita.getValor());
-		receita.setConcluida(true);
-
-		historiaService
-				.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario(), receita.getConta()));
-
-		return ResponseEntity.ok(new ReceitaDto(receita));
-	}
-
-	@Transactional
-	@PatchMapping("/{id}/altera/conta")
-	public ResponseEntity<?> alteraConta(@PathVariable Long id, @RequestBody ContaIdForm form) {
-		Receita receita = receitaService.buscarPorId(id);
-		if (receita == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
-
-		Optional<Conta> optConta = contaRepository.findById(form.getContaId());
-		if (!optConta.isPresent())
-			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
-		Conta conta = optConta.get();
-
-		if (receita.isConcluida()) {
-			if (!receita.getConta().subtrai(receita.getValor()))
-				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
-
-			conta.soma(receita.getValor());
-		}
-
-		receita.setConta(conta);
-
-		return ResponseEntity.ok(new ReceitaDto(receita));
-	}
-
-	@Transactional
-	@PatchMapping("/{id}/altera/valor")
-	public ResponseEntity<?> alteraValor(@PathVariable Long id, @RequestBody ValorForm form) {
-		Receita receita = receitaService.buscarPorId(id);
-		if (receita == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
-
-		if (receita.isConcluida()) {
-			if (!receita.getConta().subtrai(receita.getValor()))
-				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
-			receita.getConta().soma(form.getValor());
-		}
-
+		receita.getConta().subtrai(receita.getValor());
+		receita.getConta().soma(form.getValor());
 		receita.setValor(form.getValor());
+
+		receita.getConta().subtrai(receita.getValor());
+		conta.soma(receita.getValor());
+		receita.setConta(conta);
 
 		historiaService
 				.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario(), receita.getConta()));
@@ -183,8 +135,7 @@ public class ReceitaController {
 			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
 
 		if (receita.isConcluida()) {
-			if (!receita.getConta().subtrai(receita.getValor()))
-				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+			receita.getConta().subtrai(receita.getValor());
 		}
 
 		receita.setDeletado(true);
@@ -193,15 +144,6 @@ public class ReceitaController {
 				.exclui(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario(), receita.getConta()));
 
 		return ResponseEntity.ok().build();
-	}
-
-	@GetMapping("/usuario/{usuarioId}")
-	public ResponseEntity<?> listar(@PathVariable Long usuarioId,
-
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
-
-		Page<Receita> receitas = receitaService.listarPorUsuario(usuarioId, pageable);
-		return ResponseEntity.ok(ReceitaDto.converter(receitas));
 	}
 
 	@GetMapping("/{id}")

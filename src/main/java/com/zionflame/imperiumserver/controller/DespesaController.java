@@ -3,7 +3,6 @@ package com.zionflame.imperiumserver.controller;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -12,42 +11,44 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.zionflame.imperiumserver.config.exeption.BadRequestException;
 import com.zionflame.imperiumserver.controller.dto.DespesaDetalhesDto;
 import com.zionflame.imperiumserver.controller.dto.DespesaDto;
 import com.zionflame.imperiumserver.controller.dto.MensagemDto;
-import com.zionflame.imperiumserver.controller.form.ContaIdForm;
 import com.zionflame.imperiumserver.controller.form.DespesaForm;
 import com.zionflame.imperiumserver.controller.form.TransacaoFormAtualiza;
-import com.zionflame.imperiumserver.controller.form.ValorForm;
+import com.zionflame.imperiumserver.helper.ConstantsHelper;
 import com.zionflame.imperiumserver.helper.DateHelper;
 import com.zionflame.imperiumserver.model.Categoria;
 import com.zionflame.imperiumserver.model.Conta;
 import com.zionflame.imperiumserver.model.Despesa;
 import com.zionflame.imperiumserver.model.Historia;
+import com.zionflame.imperiumserver.model.Usuario;
 import com.zionflame.imperiumserver.model.enums.Natureza;
 import com.zionflame.imperiumserver.repository.CategoriaRepository;
 import com.zionflame.imperiumserver.repository.ContaRepository;
+import com.zionflame.imperiumserver.repository.DespesaRepository;
+import com.zionflame.imperiumserver.repository.specification.DespesaSpecification;
 import com.zionflame.imperiumserver.service.DespesaService;
 import com.zionflame.imperiumserver.service.HistoriaService;
 
-
 @RestController
 @RequestMapping("/despesas")
-public class DespesaController {
-
+public class DespesaController implements ConstantsHelper {
 
 	@Autowired
 	private ContaRepository contaRepository;
@@ -57,36 +58,38 @@ public class DespesaController {
 
 	@Autowired
 	private DespesaService despesaService;
-	
+
+	@Autowired
+	private DespesaRepository despesaRepository;
+
 	@Autowired
 	private HistoriaService historiaService;
 
+	@GetMapping("/page")
+	public ResponseEntity<?> listar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
+
+		return ResponseEntity.ok(DespesaDto.converter(
+				despesaRepository.findAll(Specification.where(DespesaSpecification.usuarioEqual(usuario)), pageable)));
+	}
+
 	@PostMapping
-	public ResponseEntity<?> adicionar(@RequestBody @Valid DespesaForm form, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<?> adicionar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+			@RequestBody @Valid DespesaForm form, UriComponentsBuilder uriBuilder) {
 
-		Optional<Conta> optConta = contaRepository.findById(form.getContaId());
-		
-		if (!optConta.isPresent())
-			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
-		
-		Conta conta = optConta.get();
+		Conta conta = contaRepository.findByIdAndUsuario(form.getContaId(), usuario)
+				.orElseThrow(() -> new BadRequestException("Conta inválida"));
 
-		Optional<Categoria> optCategoria = categoriaRepository.findById(form.getCategoriaId());
+		Categoria categoria = categoriaRepository.findById(form.getCategoriaId())
+				.orElseThrow(() -> new BadRequestException("Categoria inválida!"));
 
-		if (!optCategoria.isPresent())
-			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
-		
-		Categoria categoria = optCategoria.get();
-
-		if (form.isConcluida())
-			if (!conta.subtrai(form.getValor()))
-				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+		conta.subtrai(form.getValor());
 
 		Despesa despesa = form.converter();
 		despesa.setCategoria(categoria);
 		despesa.setConta(conta);
 		despesaService.adicionaDespesa(despesa);
-		
+
 		historiaService.adiciona(new Historia(despesa, Natureza.DESPESA, conta.getUsuario(), conta));
 
 		URI uri = uriBuilder.path("/despesas/{id}").buildAndExpand(despesa.getId()).toUri();
@@ -95,93 +98,33 @@ public class DespesaController {
 
 	@Transactional
 	@PutMapping("/{id}")
-	public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody TransacaoFormAtualiza form) {
-		Despesa despesa = despesaService.buscarPorId(id);
-		if (despesa == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
+	public ResponseEntity<?> atualizar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario, @PathVariable Long id,
+			@RequestBody TransacaoFormAtualiza form) {
 
-		Optional<Categoria> categoria = categoriaRepository.findById(form.getCategoriaId());
-		if (!categoria.isPresent())
-			return ResponseEntity.badRequest().body(new MensagemDto("Categoria inválida!"));
+		Despesa despesa = despesaRepository.findById(id).orElseThrow(() -> new BadRequestException("Despesa inválida"));
+
+		Categoria categoria = categoriaRepository.findById(form.getCategoriaId())
+				.orElseThrow(() -> new BadRequestException("Categoria inválida!"));
+
+		Conta conta = contaRepository.findByIdAndUsuario(form.getContaId(), usuario)
+				.orElseThrow(() -> new BadRequestException("Conta inválida"));
 
 		despesa.setDescricao(form.getDescricao());
 		despesa.setData(form.getData());
 		despesa.setHora(form.getHora());
-		despesa.setCategoria(categoria.get());
-		
-		
-		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
+		despesa.setCategoria(categoria);
 
-		return ResponseEntity.ok(new DespesaDto(despesa));
-	}
-
-	@Transactional
-	@PatchMapping("/{id}/finaliza")
-	public ResponseEntity<?> finaliza(@PathVariable Long id) {
-
-		Despesa despesa = despesaService.buscarPorId(id);
-		if (despesa == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
-
-		if (despesa.isConcluida())
-			return ResponseEntity.badRequest().body(new MensagemDto("A despesa já foi paga!"));
-
-		if (!despesa.getConta().subtrai(despesa.getValor()))
-			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
-
-		despesa.setConcluida(true);
-		
-		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
-
-		return ResponseEntity.ok(new DespesaDto(despesa));
-	}
-
-	@Transactional
-	@PatchMapping("/{id}/altera/conta")
-	public ResponseEntity<?> alteraConta(@PathVariable Long id, @RequestBody ContaIdForm form) {
-		Despesa despesa = despesaService.buscarPorId(id);
-		if (despesa == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
-
-		Optional<Conta> optConta = contaRepository.findById(form.getContaId());
-		if (!optConta.isPresent())
-			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
-		Conta conta = optConta.get();
-
-		if (despesa.getConta().getId() == conta.getId())
-			return ResponseEntity.badRequest().body(new MensagemDto("A conta deve ser diferente da anterior!"));
-
-		if (despesa.isConcluida()) {
-			despesa.getConta().soma(despesa.getValor());
-
-			if (!conta.subtrai(despesa.getValor()))
-				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
-		}
-
-		despesa.setConta(conta);
-		
-		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
-
-		return ResponseEntity.ok(new DespesaDto(despesa));
-	}
-
-	@Transactional
-	@PatchMapping("/{id}/altera/valor")
-	public ResponseEntity<?> alteraValor(@PathVariable Long id, @RequestBody ValorForm form) {
-		Despesa despesa = despesaService.buscarPorId(id);
-		if (despesa == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
-
-		if (despesa.isConcluida()) {
-			despesa.getConta().soma(despesa.getValor());
-			if (!despesa.getConta().subtrai(form.getValor()))
-				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
-		}
-
+		despesa.getConta().soma(despesa.getValor());
+		despesa.getConta().subtrai(form.getValor());
 		despesa.setValor(form.getValor());
-		
-		historiaService.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
-		
+
+		despesa.getConta().soma(despesa.getValor());
+		conta.subtrai(despesa.getValor());
+		despesa.setConta(conta);
+
+		historiaService
+				.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
+
 		return ResponseEntity.ok(new DespesaDto(despesa));
 	}
 
@@ -197,16 +140,9 @@ public class DespesaController {
 			despesa.getConta().soma(despesa.getValor());
 
 		despesa.setDeletado(true);
-		historiaService.exclui(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
+		historiaService
+				.exclui(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
 		return ResponseEntity.ok().build();
-	}
-
-	@GetMapping("/usuario/{usuarioId}")
-	public ResponseEntity<?> listar(@PathVariable Long usuarioId,
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
-
-		Page<Despesa> despesas = despesaService.listarPorUsuario(usuarioId, pageable);
-		return ResponseEntity.ok(DespesaDto.converter(despesas));
 	}
 
 	@GetMapping("/{id}")

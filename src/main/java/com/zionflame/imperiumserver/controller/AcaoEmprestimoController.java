@@ -52,8 +52,7 @@ public class AcaoEmprestimoController implements ConstantsHelper {
 			return ResponseEntity.badRequest().body(new MensagemDto("Emprestimo inválido!"));
 
 		if (emprestimo.getNatureza() == NaturezaEmprestimo.TOMADO) {
-			if (!conta.subtrai(form.getValor()))
-				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficienteo!"));
+			conta.subtrai(form.getValor());
 		} else {
 			conta.soma(form.getValor());
 		}
@@ -74,8 +73,7 @@ public class AcaoEmprestimoController implements ConstantsHelper {
 			return ResponseEntity.badRequest().body(new MensagemDto("Ação de emprestimo inválida!"));
 
 		if (acao.getEmprestimo().getNatureza() == NaturezaEmprestimo.CEDIDO) {
-			if (!acao.getConta().subtrai(acao.getValor()))
-				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+			acao.getConta().subtrai(acao.getValor());
 		} else {
 			acao.getConta().soma(acao.getValor());
 		}

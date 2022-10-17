@@ -56,8 +56,7 @@ public class TransferenciaController {
 		Conta contaOrigem = origem.get();
 		Conta contaDestino = destino.get();
 
-		if (!contaOrigem.subtrai(form.getValor()))
-			return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
+		contaOrigem.subtrai(form.getValor());
 
 		contaDestino.soma(form.getValor());
 

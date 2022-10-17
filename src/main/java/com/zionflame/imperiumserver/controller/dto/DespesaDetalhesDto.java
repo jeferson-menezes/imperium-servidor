@@ -13,15 +13,15 @@ public class DespesaDetalhesDto extends TransacaoDto {
 
 	private String contaNome;
 	private boolean concluida;
-	private CategoriaDto categoria;
-	private ContaDto conta;
+	private Long categoriaId;
+	private Long contaId;
 
 	public DespesaDetalhesDto(Despesa despesa) {
 		super(despesa);
 		concluida = despesa.isConcluida();
 		contaNome = despesa.getConta().getNome();
-		categoria = new CategoriaDto(despesa.getCategoria());
-		conta = new ContaDto(despesa.getConta());
+		categoriaId = despesa.getCategoria().getId();
+		contaId = despesa.getConta().getId();
 	}
 
 	public static Page<DespesaDetalhesDto> converter(Page<Despesa> despesas) {

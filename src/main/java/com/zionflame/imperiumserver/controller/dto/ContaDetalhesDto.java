@@ -3,7 +3,6 @@ package com.zionflame.imperiumserver.controller.dto;
 import java.math.BigDecimal;
 
 import com.zionflame.imperiumserver.model.Conta;
-import com.zionflame.imperiumserver.model.TipoConta;
 
 import lombok.Getter;
 
@@ -16,7 +15,8 @@ public class ContaDetalhesDto {
 	private String descricao;
 	private boolean incluiSoma;
 	private boolean ativo;
-	private TipoConta tipo;
+	
+	private Long tipoContaId;
 
 	public ContaDetalhesDto(Conta conta) {
 		id = conta.getId();
@@ -25,7 +25,7 @@ public class ContaDetalhesDto {
 		saldo = conta.getSaldo();
 		ativo = conta.getAtivo();
 		incluiSoma = conta.getIncluiSoma();
-		tipo = conta.getTipo();
+		tipoContaId = conta.getTipo().getId();
 	}
 
 }

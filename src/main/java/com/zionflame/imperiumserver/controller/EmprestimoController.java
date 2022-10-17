@@ -57,9 +57,8 @@ public class EmprestimoController {
 		if (form.getNatureza() == NaturezaEmprestimo.TOMADO) {
 			conta.soma(form.getValor());
 		} else {
-			if (!conta.subtrai(form.getValor())) {
-				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
-			}
+			conta.subtrai(form.getValor());
+
 		}
 
 		Emprestimo emprestimo = form.converter();
@@ -99,9 +98,8 @@ public class EmprestimoController {
 		if (emprestimo.getNatureza() == NaturezaEmprestimo.CEDIDO) {
 			emprestimo.getConta().soma(emprestimo.getValor());
 		} else {
-			if (!emprestimo.getConta().subtrai(emprestimo.getValor())) {
-				return ResponseEntity.badRequest().body(new MensagemDto("Saldo insuficiente!"));
-			}
+			emprestimo.getConta().subtrai(emprestimo.getValor());
+
 		}
 		emprestimo.setDeletado(true);
 

@@ -10,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
+import com.zionflame.imperiumserver.config.exeption.BadRequestException;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -48,11 +50,11 @@ public class Conta implements Serializable {
 		this.tipo = tipo;
 	}
 
-	public boolean subtrai(BigDecimal valor) {
-		if (saldo.compareTo(valor) == -1)
-			return false;
+	public void subtrai(BigDecimal valor) {
+		if (saldo.compareTo(valor) == -1) {
+			throw new BadRequestException("Saldo insuficiente!");
+		}
 		saldo = saldo.subtract(valor);
-		return true;
 	}
 
 	public void soma(BigDecimal valor) {

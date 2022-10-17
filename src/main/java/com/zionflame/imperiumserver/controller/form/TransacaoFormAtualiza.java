@@ -1,5 +1,6 @@
 package com.zionflame.imperiumserver.controller.form;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -14,5 +15,7 @@ public class TransacaoFormAtualiza {
 	private LocalDate data;
 	private LocalTime hora;
 	private Long categoriaId;
+	private BigDecimal valor;
+	private Long contaId;
 
 }

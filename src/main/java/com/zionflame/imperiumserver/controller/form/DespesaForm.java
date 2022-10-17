@@ -11,13 +11,12 @@ import lombok.Setter;
 @Setter
 public class DespesaForm extends TransacaoForm {
 
-	private boolean concluida;
 	@NotNull
 	private Long categoriaId;
 	@NotNull
 	private Long contaId;
 
 	public Despesa converter() {
-		return new Despesa(valor, descricao, data, hora, concluida);
+		return new Despesa(valor, descricao, data, hora, Boolean.TRUE);
 	}
 }
