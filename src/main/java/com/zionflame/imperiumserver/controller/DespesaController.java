@@ -1,5 +1,6 @@
 package com.zionflame.imperiumserver.controller;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -67,10 +69,17 @@ public class DespesaController implements ConstantsHelper {
 
 	@GetMapping("/page")
 	public ResponseEntity<?> listar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+			@RequestParam(required = false) String ano, @RequestParam(required = false) String mes,
+			@RequestParam(required = false) String data, @RequestParam(required = false) BigDecimal valor,
+			@RequestParam(required = false) String descricao,
 			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 
-		return ResponseEntity.ok(DespesaDto.converter(
-				despesaRepository.findAll(Specification.where(DespesaSpecification.usuarioEqual(usuario)), pageable)));
+		return ResponseEntity.ok(DespesaDto
+				.converter(despesaRepository.findAll(Specification.where(DespesaSpecification.usuarioEqual(usuario))
+						.and(DespesaSpecification.dataEqual(data)).and(DespesaSpecification.dataMensalEqual(mes))
+						.and(DespesaSpecification.descricaoLike(descricao)).and(DespesaSpecification.valorEqual(valor))
+
+						, pageable)));
 	}
 
 	@PostMapping
@@ -147,10 +156,8 @@ public class DespesaController implements ConstantsHelper {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> detalhar(@PathVariable Long id) {
-		Despesa despesa = despesaService.buscarPorId(id);
-		if (despesa == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
-		return ResponseEntity.ok(new DespesaDetalhesDto(despesa));
+		return ResponseEntity.ok(new DespesaDetalhesDto(
+				despesaRepository.findById(id).orElseThrow(() -> new BadRequestException("Despesa inválida"))));
 	}
 
 	@GetMapping("/filtra/usuario/{id}/data/{data}")

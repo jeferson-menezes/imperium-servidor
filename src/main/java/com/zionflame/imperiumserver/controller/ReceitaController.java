@@ -1,6 +1,7 @@
 
 package com.zionflame.imperiumserver.controller;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -67,9 +69,18 @@ public class ReceitaController implements ConstantsHelper {
 
 	@GetMapping("/page")
 	public ResponseEntity<?> listar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+			@RequestParam(required = false) String ano, @RequestParam(required = false) String mes,
+			@RequestParam(required = false) String data, @RequestParam(required = false) BigDecimal valor,
+			@RequestParam(required = false) String descricao,
 			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
-		return ResponseEntity.ok(ReceitaDto.converter(
-				receitaRepository.findAll(Specification.where(ReceitaSpecification.usuarioEqual(usuario)), pageable)));
+
+		return ResponseEntity.ok(ReceitaDto.converter(receitaRepository.findAll(Specification.where(
+
+				ReceitaSpecification.usuarioEqual(usuario)).and(ReceitaSpecification.dataEqual(data))
+				.and(ReceitaSpecification.dataMensalEqual(mes)).and(ReceitaSpecification.descricaoLike(descricao))
+				.and(ReceitaSpecification.valorEqual(valor))
+
+				, pageable)));
 	}
 
 	@PostMapping
@@ -148,10 +159,8 @@ public class ReceitaController implements ConstantsHelper {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> detalhar(@PathVariable Long id) {
-		Receita receita = receitaService.buscarPorId(id);
-		if (receita == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
-		return ResponseEntity.ok(new ReceitaDetalhesDto(receita));
+		return ResponseEntity.ok(new ReceitaDetalhesDto(
+				receitaRepository.findById(id).orElseThrow(() -> new BadRequestException("Receita inválida"))));
 	}
 
 	@GetMapping("/filtra/usuario/{id}/data/{data}")

@@ -6,8 +6,11 @@ import java.time.LocalDate;
 public class TesteMain {
 
 	public static void main(String[] args) {
-		BigDecimal valor= new BigDecimal("2");
-		System.out.println(valor);
+		String mes = "2022-05";
+		System.out.println(
+				LocalDate.parse(mes +"-01")
+				
+				);
 		
 	}
 }

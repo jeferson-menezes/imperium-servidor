@@ -12,16 +12,14 @@ public class ReceitaDetalhesDto extends TransacaoDto {
 	private static final long serialVersionUID = -4372368838002104992L;
 
 	private String contaNome;
-	private boolean concluida;
-	private CategoriaDto categoria;
-	private ContaDto conta;
+	private Long categoriaId;
+	private Long contaId;
 
 	public ReceitaDetalhesDto(Receita receita) {
 		super(receita);
-		concluida = receita.isConcluida();
 		contaNome = receita.getConta().getNome();
-		categoria = new CategoriaDto(receita.getCategoria());
-		conta = new ContaDto(receita.getConta());
+		categoriaId = receita.getCategoria().getId();
+		contaId = receita.getConta().getId();
 	}
 
 	public static Page<ReceitaDto> converter(Page<Receita> receitas) {

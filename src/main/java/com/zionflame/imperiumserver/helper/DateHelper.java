@@ -1,10 +1,11 @@
 package com.zionflame.imperiumserver.helper;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class DateHelper {
-	private static String[] meses = {"",  "janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto",
+public class DateHelper implements DatetimeHelper {
+	private static String[] meses = { "", "janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto",
 			"setembro", "outubro", "novembro", "dezembro" };
 
 	public static LocalDate atingeDia(LocalDate data, int dia) {
@@ -38,5 +39,25 @@ public class DateHelper {
 
 	public static String getMesExtenso(int i) {
 		return meses[i];
+	}
+
+	@Override
+	public LocalDateTime sToDatetimeStart(String data) {
+		return DatetimeHelper.super.sToDatetimeStart(data);
+	}
+
+	@Override
+	public LocalDateTime sToDatetimeEnd(String data) {
+		return DatetimeHelper.super.sToDatetimeEnd(data);
+	}
+
+	@Override
+	public LocalDateTime formatOfMonthStart(String anoMes) {
+		return DatetimeHelper.super.formatOfMonthStart(anoMes);
+	}
+
+	@Override
+	public LocalDateTime formatOfMonthEnd(String anoMes) {
+		return DatetimeHelper.super.formatOfMonthEnd(anoMes);
 	}
 }
