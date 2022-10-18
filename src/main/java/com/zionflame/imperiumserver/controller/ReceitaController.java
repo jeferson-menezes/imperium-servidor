@@ -69,18 +69,24 @@ public class ReceitaController implements ConstantsHelper {
 
 	@GetMapping("/page")
 	public ResponseEntity<?> listar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
-			@RequestParam(required = false) String ano, @RequestParam(required = false) String mes,
-			@RequestParam(required = false) String data, @RequestParam(required = false) BigDecimal valor,
+			@RequestParam(required = false) String ano, 
+			@RequestParam(required = false) String mes,
+			@RequestParam(required = false) String data, 
+			@RequestParam(required = false) BigDecimal valor,
 			@RequestParam(required = false) String descricao,
+			@RequestParam(required = false) Long categoriaId,
+			@RequestParam(required = false) Long contaId,
 			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 
 		return ResponseEntity.ok(ReceitaDto.converter(receitaRepository.findAll(Specification.where(
 
-				ReceitaSpecification.usuarioEqual(usuario)).and(ReceitaSpecification.dataEqual(data))
-				.and(ReceitaSpecification.dataMensalEqual(mes)).and(ReceitaSpecification.descricaoLike(descricao))
+				ReceitaSpecification.contaIdAndcontaUsuarioEqual(contaId ,usuario))
+				.and(ReceitaSpecification.dataEqual(data))
+				.and(ReceitaSpecification.dataMensalEqual(mes))
+				.and(ReceitaSpecification.descricaoLike(descricao))
 				.and(ReceitaSpecification.valorEqual(valor))
-
-				, pageable)));
+				.and(ReceitaSpecification.categoriaIdEqual(categoriaId))
+				,pageable)));
 	}
 
 	@PostMapping

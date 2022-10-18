@@ -1,7 +1,6 @@
 package com.zionflame.imperiumserver.helper;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class DateHelper implements DatetimeHelper {
@@ -42,22 +41,22 @@ public class DateHelper implements DatetimeHelper {
 	}
 
 	@Override
-	public LocalDateTime sToDatetimeStart(String data) {
-		return DatetimeHelper.super.sToDatetimeStart(data);
-	}
-
-	@Override
-	public LocalDateTime sToDatetimeEnd(String data) {
+	public LocalDate sToDatetimeEnd(String data) {
 		return DatetimeHelper.super.sToDatetimeEnd(data);
 	}
 
 	@Override
-	public LocalDateTime formatOfMonthStart(String anoMes) {
-		return DatetimeHelper.super.formatOfMonthStart(anoMes);
+	public LocalDate sToDatetimeStart(String data) {
+		return DatetimeHelper.super.sToDatetimeStart(data);
 	}
 
 	@Override
-	public LocalDateTime formatOfMonthEnd(String anoMes) {
+	public LocalDate formatOfMonthEnd(String anoMes) {
 		return DatetimeHelper.super.formatOfMonthEnd(anoMes);
+	}
+
+	@Override
+	public LocalDate formatOfMonthStart(String anoMes) {
+		return DatetimeHelper.super.formatOfMonthStart(anoMes);
 	}
 }

@@ -69,17 +69,24 @@ public class DespesaController implements ConstantsHelper {
 
 	@GetMapping("/page")
 	public ResponseEntity<?> listar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
-			@RequestParam(required = false) String ano, @RequestParam(required = false) String mes,
-			@RequestParam(required = false) String data, @RequestParam(required = false) BigDecimal valor,
+			@RequestParam(required = false) String ano, 
+			@RequestParam(required = false) String mes,
+			@RequestParam(required = false) String data, 
+			@RequestParam(required = false) BigDecimal valor,
 			@RequestParam(required = false) String descricao,
+			@RequestParam(required = false) Long categoriaId,
+			@RequestParam(required = false) Long contaId,
 			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 
-		return ResponseEntity.ok(DespesaDto
-				.converter(despesaRepository.findAll(Specification.where(DespesaSpecification.usuarioEqual(usuario))
-						.and(DespesaSpecification.dataEqual(data)).and(DespesaSpecification.dataMensalEqual(mes))
-						.and(DespesaSpecification.descricaoLike(descricao)).and(DespesaSpecification.valorEqual(valor))
-
-						, pageable)));
+		return ResponseEntity.ok(DespesaDto.converter(despesaRepository.findAll(
+				Specification.where(
+						DespesaSpecification.contaIdAndcontaUsuarioEqual(contaId ,usuario))
+						.and(DespesaSpecification.dataEqual(data))
+						.and(DespesaSpecification.dataMensalEqual(mes))
+						.and(DespesaSpecification.descricaoLike(descricao))
+						.and(DespesaSpecification.valorEqual(valor))
+						.and(DespesaSpecification.categoriaIdEqual(categoriaId))
+						,pageable)));
 	}
 
 	@PostMapping

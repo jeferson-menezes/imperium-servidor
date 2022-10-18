@@ -1,8 +1,6 @@
 package com.zionflame.imperiumserver.helper;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.util.Strings;
@@ -17,35 +15,35 @@ public interface DatetimeHelper {
 
 	Pattern YEAR_PATTERN = Pattern.compile("^\\d{4}$");
 
-	default LocalDateTime sToDatetimeStart(String data) {
+	default LocalDate sToDatetimeStart(String data) {
 		if (Strings.isBlank(data) || !DATE_PATTERN.matcher(data).matches()) {
 			throw new BadRequestException("Data inválida!");
 		}
-		return LocalDate.parse(data).atStartOfDay();
+		return LocalDate.parse(data);
 	}
 
-	default LocalDateTime sToDatetimeEnd(String data) {
+	default LocalDate sToDatetimeEnd(String data) {
 		if (Strings.isBlank(data) || !DATE_PATTERN.matcher(data).matches()) {
 			throw new BadRequestException("Data inválida!");
 		}
-		return LocalDate.parse(data).atTime(LocalTime.MAX);
+		return LocalDate.parse(data);
 	}
 
-	default LocalDateTime formatOfMonthStart(String anoMes) {
+	default LocalDate formatOfMonthStart(String anoMes) {
 		if (Strings.isBlank(anoMes) || !MONTH_PATTERN.matcher(anoMes).matches()) {
 			throw new BadRequestException("Data inválida!");
 		}
 
-		return LocalDate.parse(anoMes + "-01").atStartOfDay();
+		return LocalDate.parse(anoMes + "-01");
 	}
 
-	default LocalDateTime formatOfMonthEnd(String anoMes) {
+	default LocalDate formatOfMonthEnd(String anoMes) {
 		if (Strings.isBlank(anoMes) || !MONTH_PATTERN.matcher(anoMes).matches()) {
 			throw new BadRequestException("Data inválida!");
 		}
 
 		LocalDate data = LocalDate.parse(anoMes + "-01");
 
-		return data.withDayOfMonth(data.lengthOfMonth()).atTime(LocalTime.MAX);
+		return data.withDayOfMonth(data.lengthOfMonth());
 	}
 }
