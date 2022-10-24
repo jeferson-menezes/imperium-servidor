@@ -9,6 +9,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -33,6 +34,8 @@ import com.zionflame.imperiumserver.controller.dto.DespesaDto;
 import com.zionflame.imperiumserver.controller.dto.MensagemDto;
 import com.zionflame.imperiumserver.controller.form.DespesaForm;
 import com.zionflame.imperiumserver.controller.form.TransacaoFormAtualiza;
+import com.zionflame.imperiumserver.event.model.AtualizaDespesaEvent;
+import com.zionflame.imperiumserver.event.model.NovaDespesaEvent;
 import com.zionflame.imperiumserver.helper.ConstantsHelper;
 import com.zionflame.imperiumserver.helper.DateHelper;
 import com.zionflame.imperiumserver.model.Categoria;
@@ -67,26 +70,31 @@ public class DespesaController implements ConstantsHelper {
 	@Autowired
 	private HistoriaService historiaService;
 
+	@Autowired
+	private ApplicationEventPublisher publisher;
+
 	@GetMapping("/page")
 	public ResponseEntity<?> listar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
-			@RequestParam(required = false) String ano, 
-			@RequestParam(required = false) String mes,
-			@RequestParam(required = false) String data, 
-			@RequestParam(required = false) BigDecimal valor,
-			@RequestParam(required = false) String descricao,
-			@RequestParam(required = false) Long categoriaId,
+			@RequestParam(required = false) String ano, @RequestParam(required = false) String mes,
+			@RequestParam(required = false) String data, @RequestParam(required = false) BigDecimal valor,
+			@RequestParam(required = false) String descricao, @RequestParam(required = false) Long categoriaId,
 			@RequestParam(required = false) Long contaId,
 			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 
-		return ResponseEntity.ok(DespesaDto.converter(despesaRepository.findAll(
-				Specification.where(
-						DespesaSpecification.contaIdAndcontaUsuarioEqual(contaId ,usuario))
-						.and(DespesaSpecification.dataEqual(data))
-						.and(DespesaSpecification.dataMensalEqual(mes))
-						.and(DespesaSpecification.descricaoLike(descricao))
-						.and(DespesaSpecification.valorEqual(valor))
-						.and(DespesaSpecification.categoriaIdEqual(categoriaId))
-						,pageable)));
+		return ResponseEntity
+				.ok(DespesaDto
+						.converter(
+								despesaRepository
+										.findAll(
+												Specification
+														.where(DespesaSpecification.contaIdAndcontaUsuarioEqual(contaId,
+																usuario))
+														.and(DespesaSpecification.dataEqual(data))
+														.and(DespesaSpecification.dataMensalEqual(mes))
+														.and(DespesaSpecification.descricaoLike(descricao))
+														.and(DespesaSpecification.valorEqual(valor))
+														.and(DespesaSpecification.categoriaIdEqual(categoriaId)),
+												pageable)));
 	}
 
 	@PostMapping
@@ -106,7 +114,7 @@ public class DespesaController implements ConstantsHelper {
 		despesa.setConta(conta);
 		despesaService.adicionaDespesa(despesa);
 
-		historiaService.adiciona(new Historia(despesa, Natureza.DESPESA, conta.getUsuario(), conta));
+		publisher.publishEvent(new NovaDespesaEvent(despesa.getId(), usuario));
 
 		URI uri = uriBuilder.path("/despesas/{id}").buildAndExpand(despesa.getId()).toUri();
 		return ResponseEntity.created(uri).body(new DespesaDto(despesa));
@@ -138,8 +146,7 @@ public class DespesaController implements ConstantsHelper {
 		conta.subtrai(despesa.getValor());
 		despesa.setConta(conta);
 
-		historiaService
-				.atualiza(new Historia(despesa, Natureza.DESPESA, despesa.getConta().getUsuario(), despesa.getConta()));
+		publisher.publishEvent(new AtualizaDespesaEvent(despesa.getId(), usuario));
 
 		return ResponseEntity.ok(new DespesaDto(despesa));
 	}

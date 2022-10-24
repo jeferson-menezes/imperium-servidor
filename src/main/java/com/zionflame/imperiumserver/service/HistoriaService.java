@@ -5,8 +5,17 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.zionflame.imperiumserver.config.exeption.BadRequestException;
+import com.zionflame.imperiumserver.model.Despesa;
 import com.zionflame.imperiumserver.model.Historia;
+import com.zionflame.imperiumserver.model.Receita;
+import com.zionflame.imperiumserver.model.Transferencia;
+import com.zionflame.imperiumserver.model.Usuario;
+import com.zionflame.imperiumserver.model.enums.Natureza;
+import com.zionflame.imperiumserver.repository.DespesaRepository;
 import com.zionflame.imperiumserver.repository.HistoriaRepository;
+import com.zionflame.imperiumserver.repository.ReceitaRepository;
+import com.zionflame.imperiumserver.repository.TransferenciaRepository;
 
 @Service
 public class HistoriaService {
@@ -14,39 +23,81 @@ public class HistoriaService {
 	@Autowired
 	private HistoriaRepository historiaRepository;
 
-	public void adiciona(Historia historia) {
-		historiaRepository.save(historia);
-	}
+	@Autowired
+	private TransferenciaRepository transferenciaRepository;
+
+	@Autowired
+	private DespesaRepository despesaRepository;
+
+	@Autowired
+	private ReceitaRepository receitaRepository;
+
 
 	public void exclui(Historia historia) {
-		Optional<Historia> optional = historiaRepository.findByNaturezaAndTransacaoIdAndUsuarioId(historia.getNatureza(),
-				historia.getTransacaoId(), historia.getUsuario().getId());
+		Optional<Historia> optional = historiaRepository.findByNaturezaAndTransacaoIdAndUsuarioId(
+				historia.getNatureza(), historia.getTransacaoId(), historia.getUsuario().getId());
 
 		if (!optional.isPresent())
 			return;
-		
+
 		Historia h = optional.get();
 		historiaRepository.delete(h);
 
 	}
 
-	public void atualiza(Historia historia) {
+	public void adicionaTransferencia(Long transferenciaId, Usuario usuario) {
 
-		Optional<Historia> optional = historiaRepository.findByNaturezaAndTransacaoIdAndUsuarioId(historia.getNatureza(),
-				historia.getTransacaoId(), historia.getUsuario().getId());
+		Transferencia transferencia = transferenciaRepository.findById(transferenciaId)
+				.orElseThrow(() -> new BadRequestException("Transferência inválida!"));
+		historiaRepository
+				.save(new Historia(transferencia, Natureza.TRANSFERENCIA, usuario, transferencia.getContaOrigem(), transferencia.getContaDestino()));
+	}
 
-		if (!optional.isPresent()) {
-			this.adiciona(historia);
-			return;
-		}
+	public void adicionaDespesa(Long despesaId, Usuario usuario) {
 
-		Historia h = optional.get();
-		h.setData(historia.getData());
-		h.setHora(historia.getHora());
-		h.setDescricao(historia.getDescricao());
-		h.setValor(historia.getValor());
-		h.setUsuario(historia.getUsuario());
+		Despesa despesa = despesaRepository.findById(despesaId)
+				.orElseThrow(() -> new BadRequestException("Despesa inválida!"));
+		historiaRepository.save(new Historia(despesa, Natureza.DESPESA, usuario, despesa.getConta()));
+	}
 
-		historiaRepository.save(h);
+	public void adicionaReceita(Long receitaId, Usuario usuario) {
+
+		Receita receita = receitaRepository.findById(receitaId)
+				.orElseThrow(() -> new BadRequestException("Receita inválida!"));
+		historiaRepository.save(new Historia(receita, Natureza.RECEITA, usuario, receita.getConta()));
+	}
+
+	public void atualizaDespesa(Long despesaId, Usuario usuario) {
+
+		Despesa despesa = despesaRepository.findById(despesaId)
+				.orElseThrow(() -> new BadRequestException("Despesa inválida!"));
+
+		Historia historia = historiaRepository
+				.findByNaturezaAndTransacaoIdAndUsuario(Natureza.DESPESA, despesaId, usuario)
+				.orElseThrow(() -> new BadRequestException("Despesa inválida!"));
+
+		historia.setData(despesa.getData());
+		historia.setHora(despesa.getHora());
+		historia.setDescricao(despesa.getDescricao());
+		historia.setValor(despesa.getValor());
+
+		historiaRepository.save(historia);
+	}
+
+	public void atualizaReceita(Long receitaId, Usuario usuario) {
+
+		Receita receita = receitaRepository.findById(receitaId)
+				.orElseThrow(() -> new BadRequestException("Receita inválida!"));
+
+		Historia historia = historiaRepository
+				.findByNaturezaAndTransacaoIdAndUsuario(Natureza.RECEITA, receitaId, usuario)
+				.orElseThrow(() -> new BadRequestException("Historia inválida!"));
+
+		historia.setData(receita.getData());
+		historia.setHora(receita.getHora());
+		historia.setDescricao(receita.getDescricao());
+		historia.setValor(receita.getValor());
+
+		historiaRepository.save(historia);
 	}
 }

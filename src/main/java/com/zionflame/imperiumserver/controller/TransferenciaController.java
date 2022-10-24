@@ -1,63 +1,62 @@
 package com.zionflame.imperiumserver.controller;
 
 import java.net.URI;
-import java.util.Optional;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.zionflame.imperiumserver.controller.dto.MensagemDto;
+import com.zionflame.imperiumserver.config.exeption.BadRequestException;
 import com.zionflame.imperiumserver.controller.dto.TransferenciaDto;
 import com.zionflame.imperiumserver.controller.form.TransferenciaForm;
+import com.zionflame.imperiumserver.event.model.NovaTransferenciaEvent;
+import com.zionflame.imperiumserver.helper.ConstantsHelper;
 import com.zionflame.imperiumserver.model.Conta;
-import com.zionflame.imperiumserver.model.Historia;
 import com.zionflame.imperiumserver.model.Transferencia;
-import com.zionflame.imperiumserver.model.enums.Natureza;
+import com.zionflame.imperiumserver.model.Usuario;
 import com.zionflame.imperiumserver.repository.ContaRepository;
 import com.zionflame.imperiumserver.repository.TransferenciaRepository;
-import com.zionflame.imperiumserver.service.HistoriaService;
 
 @RestController
 @RequestMapping("/transferencias")
-public class TransferenciaController {
+public class TransferenciaController implements ConstantsHelper {
 
 	@Autowired
 	private ContaRepository contaRepository;
 
 	@Autowired
 	private TransferenciaRepository transferenciaRepository;
-	
 
 	@Autowired
-	private HistoriaService historiaService;
+	private ApplicationEventPublisher publisher;
 
 	@Transactional
 	@PostMapping
-	public ResponseEntity<?> transfere(@RequestBody TransferenciaForm form, UriComponentsBuilder uriBuilder) {
-		Optional<Conta> origem = contaRepository.findById(form.getContaOrigemId());
-		Optional<Conta> destino = contaRepository.findById(form.getContaDestinoId());
+	public ResponseEntity<?> transfere(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+			@RequestBody TransferenciaForm form, UriComponentsBuilder uriBuilder) {
 
-		if (!origem.isPresent() || !destino.isPresent())
-			return ResponseEntity.badRequest().body(new MensagemDto("Conta inválida!"));
+		if (form.getContaOrigemId() == form.getContaDestinoId())
+			throw new BadRequestException("Contas são as mesmas");
 
-		Conta contaOrigem = origem.get();
-		Conta contaDestino = destino.get();
+		Conta contaOrigem = contaRepository.findByIdAndUsuario(form.getContaOrigemId(), usuario)
+				.orElseThrow(() -> new BadRequestException("Conta inválida"));
+
+		Conta contaDestino = contaRepository.findByIdAndUsuario(form.getContaDestinoId(), usuario)
+				.orElseThrow(() -> new BadRequestException("Conta inválida"));
 
 		contaOrigem.subtrai(form.getValor());
-
 		contaDestino.soma(form.getValor());
 
 		Transferencia trasferencia = form.converter();
@@ -66,18 +65,17 @@ public class TransferenciaController {
 
 		transferenciaRepository.save(trasferencia);
 
-		historiaService.adiciona(new Historia(trasferencia, Natureza.TRANSFERENCIA, contaDestino.getUsuario(), contaOrigem));
-		
+		publisher.publishEvent(new NovaTransferenciaEvent(trasferencia.getId(), usuario));
+
 		URI uri = uriBuilder.path("/transferencias/{id}").buildAndExpand(trasferencia.getId()).toUri();
 		return ResponseEntity.created(uri).body(new TransferenciaDto(trasferencia));
 	}
-	
-	@GetMapping("/usuario/{usuarioId}")
-	public ResponseEntity<?> listarPorUsuario(@PathVariable Long usuarioId,
+
+	@GetMapping("/page")
+	public ResponseEntity<?> listarPorUsuario(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
 			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 		
-		Page<Transferencia> transferencias = transferenciaRepository.findByContaOrigemUsuarioId(usuarioId, pageable);
-		
-		return ResponseEntity.ok(TransferenciaDto.converter(transferencias));
+		return ResponseEntity
+				.ok(TransferenciaDto.converter(transferenciaRepository.findByContaOrigemUsuario(usuario, pageable)));
 	}
 }

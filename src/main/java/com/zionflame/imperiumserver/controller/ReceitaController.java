@@ -9,6 +9,7 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -33,6 +34,8 @@ import com.zionflame.imperiumserver.controller.dto.ReceitaDetalhesDto;
 import com.zionflame.imperiumserver.controller.dto.ReceitaDto;
 import com.zionflame.imperiumserver.controller.form.ReceitaForm;
 import com.zionflame.imperiumserver.controller.form.TransacaoFormAtualiza;
+import com.zionflame.imperiumserver.event.model.AtualizaReceitaEvent;
+import com.zionflame.imperiumserver.event.model.NovaReceitaEvent;
 import com.zionflame.imperiumserver.helper.ConstantsHelper;
 import com.zionflame.imperiumserver.helper.DateHelper;
 import com.zionflame.imperiumserver.model.Categoria;
@@ -67,6 +70,9 @@ public class ReceitaController implements ConstantsHelper {
 	@Autowired
 	private ReceitaRepository receitaRepository;
 
+	@Autowired
+	private ApplicationEventPublisher publisher;
+	
 	@GetMapping("/page")
 	public ResponseEntity<?> listar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
 			@RequestParam(required = false) String ano, 
@@ -106,7 +112,7 @@ public class ReceitaController implements ConstantsHelper {
 		receita.setConta(conta);
 		receitaService.adicionaReceita(receita);
 
-		historiaService.adiciona(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario(), conta));
+		publisher.publishEvent(new NovaReceitaEvent(receita.getId(), usuario));
 
 		URI uri = uriBuilder.path("/receitas/{id}").buildAndExpand(receita.getId()).toUri();
 		return ResponseEntity.created(uri).body(new ReceitaDto(receita));
@@ -137,8 +143,7 @@ public class ReceitaController implements ConstantsHelper {
 		conta.soma(receita.getValor());
 		receita.setConta(conta);
 
-		historiaService
-				.atualiza(new Historia(receita, Natureza.RECEITA, receita.getConta().getUsuario(), receita.getConta()));
+		publisher.publishEvent(new AtualizaReceitaEvent(receita.getId(), usuario));
 
 		return ResponseEntity.ok(new ReceitaDto(receita));
 	}
