@@ -9,12 +9,16 @@ import lombok.Getter;
 @Getter
 public class ContaDetalhesDto {
 
-	private Long id;
-	private String nome;
-	private BigDecimal saldo;
-	private String descricao;
-	private boolean incluiSoma;
-	private boolean ativo;
+	private final Long id;
+	private final String nome;
+	private final BigDecimal saldo;
+	private final String descricao;
+	private final String tipoContaNome;
+	private final String usuarioNome;
+	private final String tipoContaIcone;
+	private final String tipoContaCor;
+	private final boolean incluiSoma;
+	private final boolean ativo;
 	
 	private Long tipoContaId;
 
@@ -26,6 +30,10 @@ public class ContaDetalhesDto {
 		ativo = conta.getAtivo();
 		incluiSoma = conta.getIncluiSoma();
 		tipoContaId = conta.getTipo().getId();
+		tipoContaNome = conta.getTipo().getNome();
+		tipoContaIcone = conta.getTipo().getIcone();
+		tipoContaCor = conta.getTipo().getCor();
+		usuarioNome = conta.getUsuario().getNome();
 	}
 
 }

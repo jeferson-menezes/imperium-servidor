@@ -12,7 +12,6 @@ import org.springframework.data.jpa.domain.Specification;
 import com.zionflame.imperiumserver.helper.DateHelper;
 import com.zionflame.imperiumserver.model.Categoria;
 import com.zionflame.imperiumserver.model.Conta;
-import com.zionflame.imperiumserver.model.Despesa;
 import com.zionflame.imperiumserver.model.Receita;
 import com.zionflame.imperiumserver.model.Usuario;
 

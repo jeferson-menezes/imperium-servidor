@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.zionflame.imperiumserver.model.TipoConta;
+import com.zionflame.imperiumserver.controller.dto.TipoContaDto;
 import com.zionflame.imperiumserver.repository.TipoContaRepository;
 
 @RestController
@@ -18,7 +18,7 @@ public class TipoContaController {
 	private TipoContaRepository tipoContaRepository;
 
 	@GetMapping
-	public List<TipoConta> listarTodas() {
-		return tipoContaRepository.findAll();
+	public List<TipoContaDto> listarTodas() {
+		return TipoContaDto.converter(tipoContaRepository.findAll());
 	}
 }

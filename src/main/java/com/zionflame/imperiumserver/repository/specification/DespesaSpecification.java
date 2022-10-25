@@ -23,6 +23,7 @@ public class DespesaSpecification {
 		}
 
 		return (root, criteriaQuery, criteriaBuilder) -> {
+
 			Join<Despesa, Conta> contaJoin = root.join("conta");
 
 			List<Predicate> predicates = new ArrayList<Predicate>();
@@ -30,6 +31,7 @@ public class DespesaSpecification {
 			if (usuario != null) {
 				predicates.add(criteriaBuilder.equal(contaJoin.get("usuario"), usuario));
 			}
+
 			if (contaId != null) {
 				predicates.add(criteriaBuilder.equal(contaJoin.get("id"), contaId));
 			}

@@ -2,15 +2,12 @@ package com.zionflame.imperiumserver.controller;
 
 import java.math.BigDecimal;
 import java.net.URI;
-import java.time.LocalDate;
-import java.util.List;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
@@ -37,7 +34,6 @@ import com.zionflame.imperiumserver.controller.form.TransacaoFormAtualiza;
 import com.zionflame.imperiumserver.event.model.AtualizaDespesaEvent;
 import com.zionflame.imperiumserver.event.model.NovaDespesaEvent;
 import com.zionflame.imperiumserver.helper.ConstantsHelper;
-import com.zionflame.imperiumserver.helper.DateHelper;
 import com.zionflame.imperiumserver.model.Categoria;
 import com.zionflame.imperiumserver.model.Conta;
 import com.zionflame.imperiumserver.model.Despesa;
@@ -73,8 +69,17 @@ public class DespesaController implements ConstantsHelper {
 	@Autowired
 	private ApplicationEventPublisher publisher;
 
-	@GetMapping("/page")
+	@GetMapping
 	public ResponseEntity<?> listar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+			@RequestParam(required = false) String mes) {
+
+		return ResponseEntity.ok(DespesaDto.converter(despesaRepository
+				.findAll(Specification.where(DespesaSpecification.contaIdAndcontaUsuarioEqual(null, usuario))
+						.and(DespesaSpecification.dataMensalEqual(mes)))));
+	}
+
+	@GetMapping("/page")
+	public ResponseEntity<?> listarPage(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
 			@RequestParam(required = false) String ano, @RequestParam(required = false) String mes,
 			@RequestParam(required = false) String data, @RequestParam(required = false) BigDecimal valor,
 			@RequestParam(required = false) String descricao, @RequestParam(required = false) Long categoriaId,
@@ -174,34 +179,4 @@ public class DespesaController implements ConstantsHelper {
 				despesaRepository.findById(id).orElseThrow(() -> new BadRequestException("Despesa inválida"))));
 	}
 
-	@GetMapping("/filtra/usuario/{id}/data/{data}")
-	public ResponseEntity<?> listarPorData(@PathVariable Long id, @PathVariable String data,
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
-		Page<Despesa> despesas = despesaService.listarPorUsuarioData(id, DateHelper.data(data), pageable);
-		return ResponseEntity.ok(DespesaDto.converter(despesas));
-	}
-
-	@GetMapping("/filtra/usuario/{id}/descricao/{descricao}")
-	public ResponseEntity<?> filtrarPorDescricao(@PathVariable Long id, @PathVariable String descricao,
-
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
-
-		Page<Despesa> despesas = despesaService.listarPorUsuarioDescricao(id, descricao, pageable);
-		return ResponseEntity.ok(DespesaDto.converter(despesas));
-	}
-
-	@GetMapping("/filtra/usuario/{id}/mes/{mes}")
-	public ResponseEntity<?> filtrarPorMes(@PathVariable Long id, @PathVariable String mes,
-			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
-		LocalDate[] periodo = DateHelper.mes(mes);
-		Page<Despesa> despesas = despesaService.filtrarPorUsuarioMes(id, periodo[0], periodo[1], pageable);
-		return ResponseEntity.ok(DespesaDto.converter(despesas));
-	}
-
-	@GetMapping("/lista/usuario/{id}/mes/{mes}")
-	public ResponseEntity<?> listarPorMes(@PathVariable Long id, @PathVariable String mes) {
-		LocalDate[] periodo = DateHelper.mes(mes);
-		List<Despesa> despesas = despesaService.listarPorUsuarioMes(id, periodo[0], periodo[1]);
-		return ResponseEntity.ok(DespesaDto.converter(despesas));
-	}
 }

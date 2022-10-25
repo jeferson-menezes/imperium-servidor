@@ -11,16 +11,16 @@ import lombok.Getter;
 @Getter
 public class ContaDto {
 
-	private Long id;
-	private String nome;
-	private BigDecimal saldo;
-	private String descricao;
-	private String tipoContaNome;
-	private String usuarioNome;
-	private String tipoContaIcone;
-	private String tipoContaCor;
-	private boolean incluiSoma;
-	private boolean ativo;
+	private final Long id;
+	private final String nome;
+	private final BigDecimal saldo;
+	private final String descricao;
+	private final String tipoContaNome;
+	private final String usuarioNome;
+	private final String tipoContaIcone;
+	private final String tipoContaCor;
+	private final Boolean incluiSoma;
+	private final Boolean ativo;
 
 	public ContaDto(Conta conta) {
 		id = conta.getId();

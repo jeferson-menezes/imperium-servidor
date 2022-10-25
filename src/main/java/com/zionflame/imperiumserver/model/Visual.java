@@ -18,7 +18,6 @@ public class Visual implements Serializable {
 	protected String cor;
 
 	public Visual() {
-
 	}
 
 	public Visual(String cor, String icone) {

@@ -21,6 +21,8 @@ public class HistoriaDto {
 	private LocalTime hora;
 	private String descricao;
 	private BigDecimal valor;
+	private String contaNome;
+	private String contaDestinoNome;
 
 	public HistoriaDto(Historia historia) {
 		id = historia.getId();
@@ -30,6 +32,8 @@ public class HistoriaDto {
 		hora = historia.getHora();
 		descricao = historia.getDescricao();
 		valor = historia.getValor();
+		contaNome = historia.getConta() != null ? historia.getConta().getNome() : null;
+		contaDestinoNome = historia.getContaDestino() != null ? historia.getContaDestino().getNome() : null;
 	}
 
 	public static Page<HistoriaDto> converter(Page<Historia> historias) {

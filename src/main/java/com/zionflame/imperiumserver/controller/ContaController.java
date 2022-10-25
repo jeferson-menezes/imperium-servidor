@@ -75,11 +75,9 @@ public class ContaController implements ConstantsHelper {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> detalhar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario, @PathVariable Long id) {
-		
-		Conta conta = contaRepository.findByIdAndUsuario(id, usuario)
-				.orElseThrow(() -> new BadRequestException("Conta inválida"));
 
-		return ResponseEntity.ok(new ContaDetalhesDto(conta));
+		return ResponseEntity.ok(new ContaDetalhesDto(contaRepository.findByIdAndUsuario(id, usuario)
+				.orElseThrow(() -> new BadRequestException("Conta inválida"))));
 	}
 
 }
