@@ -70,11 +70,13 @@ public class ReceitaController implements ConstantsHelper {
 	private ApplicationEventPublisher publisher;
 
 	@GetMapping
-	public ResponseEntity<?> listar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+	public ResponseEntity<?> listar(
+			@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
 			@RequestParam(required = false) String mes) {
 
 		return ResponseEntity.ok(ReceitaDto.converter(receitaRepository
-				.findAll(Specification.where(ReceitaSpecification.contaIdAndcontaUsuarioEqual(null, usuario))
+				.findAll(Specification
+						.where(ReceitaSpecification.contaIdAndcontaUsuarioEqual(null, usuario))
 						.and(ReceitaSpecification.dataMensalEqual(mes)))));
 	}
 
