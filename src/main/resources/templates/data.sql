@@ -407,3 +407,11 @@ INSERT INTO `imperium`.`bandeira` (`nome`, `cor`, `icone`) VALUES ('Discover Net
 INSERT INTO `imperium`.`bandeira` (`nome`, `cor`, `icone`) VALUES ('Outras', '#ff5f01', 'credit-card-outline	');
 
 INSERT INTO `imperium`.`usuario` (`email`, `nome`, `senha`) VALUES ('je_lionjuda@hotmail.com', 'Jeferson Menezes', '$2a$10$8Rb/uLgSVro6Af4SbIt5YO8Q5VmaHW5f8dBUzjwSJd6x6T802hX7C');
+
+INSERT INTO `imperium`.`tipo_ativo`
+(`nome`,
+`renda`)
+VALUES
+('Ações', 'RENDA_VARIAVEL'),
+('FII - Fundo de Investimento Imobiliário', 'RENDA_VARIAVEL'),
+('Tesouro Direto e Títulos Públicos', 'RENDA_FIXA');

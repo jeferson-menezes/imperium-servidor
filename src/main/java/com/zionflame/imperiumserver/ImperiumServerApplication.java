@@ -19,7 +19,7 @@ public class ImperiumServerApplication {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/**").allowedMethods("*").allowedOrigins("http://localhost:8080",
-						"http://192.168.15.100:8080", "http://zionflame.ddns.net:9876");
+						"http://192.168.15.100:8080", "http://zionflame.ddns.net:9876", "https://zionflame.netlify.app");
 			}
 		};
 	}

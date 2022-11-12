@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.zionflame.imperiumserver.config.exeption.BadRequestException;
-import com.zionflame.imperiumserver.controller.dto.MensagemDto;
 import com.zionflame.imperiumserver.controller.dto.ReceitaDetalhesDto;
 import com.zionflame.imperiumserver.controller.dto.ReceitaDto;
 import com.zionflame.imperiumserver.controller.form.ReceitaForm;
@@ -70,13 +70,11 @@ public class ReceitaController implements ConstantsHelper {
 	private ApplicationEventPublisher publisher;
 
 	@GetMapping
-	public ResponseEntity<?> listar(
-			@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
+	public ResponseEntity<?> listar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
 			@RequestParam(required = false) String mes) {
 
 		return ResponseEntity.ok(ReceitaDto.converter(receitaRepository
-				.findAll(Specification
-						.where(ReceitaSpecification.contaIdAndcontaUsuarioEqual(null, usuario))
+				.findAll(Specification.where(ReceitaSpecification.contaIdAndcontaUsuarioEqual(null, usuario))
 						.and(ReceitaSpecification.dataMensalEqual(mes)))));
 	}
 
@@ -98,7 +96,7 @@ public class ReceitaController implements ConstantsHelper {
 
 	@PostMapping
 	public ResponseEntity<?> adicionar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
-			@RequestBody ReceitaForm form, UriComponentsBuilder uriBuilder) {
+			@RequestBody @Valid ReceitaForm form, UriComponentsBuilder uriBuilder) {
 
 		Conta conta = contaRepository.findByIdAndUsuario(form.getContaId(), usuario)
 				.orElseThrow(() -> new BadRequestException("Conta inválida"));
@@ -123,6 +121,7 @@ public class ReceitaController implements ConstantsHelper {
 	@PutMapping("/{id}")
 	public ResponseEntity<?> atualizar(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario, @PathVariable Long id,
 			@RequestBody TransacaoFormAtualiza form) {
+
 		Receita receita = receitaRepository.findById(id).orElseThrow(() -> new BadRequestException("Receita inválida"));
 
 		Categoria categoria = categoriaRepository.findById(form.getCategoriaId())
@@ -153,13 +152,9 @@ public class ReceitaController implements ConstantsHelper {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> excluir(@PathVariable Long id) {
 
-		Receita receita = receitaService.buscarPorId(id);
-		if (receita == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Receita inválida!"));
+		Receita receita = receitaRepository.findById(id).orElseThrow(() -> new BadRequestException("Receita inválida"));
 
-		if (receita.isConcluida()) {
-			receita.getConta().subtrai(receita.getValor());
-		}
+		receita.getConta().subtrai(receita.getValor());
 
 		receita.setDeletado(true);
 

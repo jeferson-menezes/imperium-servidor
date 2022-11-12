@@ -28,7 +28,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.zionflame.imperiumserver.config.exeption.BadRequestException;
 import com.zionflame.imperiumserver.controller.dto.DespesaDetalhesDto;
 import com.zionflame.imperiumserver.controller.dto.DespesaDto;
-import com.zionflame.imperiumserver.controller.dto.MensagemDto;
 import com.zionflame.imperiumserver.controller.form.DespesaForm;
 import com.zionflame.imperiumserver.controller.form.TransacaoFormAtualiza;
 import com.zionflame.imperiumserver.event.model.AtualizaDespesaEvent;
@@ -160,12 +159,9 @@ public class DespesaController implements ConstantsHelper {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> excluir(@PathVariable Long id) {
 
-		Despesa despesa = despesaService.buscarPorId(id);
-		if (despesa == null)
-			return ResponseEntity.badRequest().body(new MensagemDto("Despesa inválida!"));
+		Despesa despesa = despesaRepository.findById(id).orElseThrow(() -> new BadRequestException("Despesa inválida"));
 
-		if (despesa.isConcluida())
-			despesa.getConta().soma(despesa.getValor());
+		despesa.getConta().soma(despesa.getValor());
 
 		despesa.setDeletado(true);
 		historiaService
