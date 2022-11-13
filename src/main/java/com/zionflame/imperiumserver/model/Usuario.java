@@ -21,6 +21,7 @@ import lombok.Setter;
 @Getter
 @Entity
 public class Usuario implements UserDetails, Serializable {
+	
 	private static final long serialVersionUID = 8833724539013627019L;
 
 	@Id

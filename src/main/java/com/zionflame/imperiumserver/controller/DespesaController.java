@@ -8,6 +8,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
@@ -79,26 +80,24 @@ public class DespesaController implements ConstantsHelper {
 
 	@GetMapping("/page")
 	public ResponseEntity<?> listarPage(@RequestAttribute(USUARIO_ATT_REQ) Usuario usuario,
-			@RequestParam(required = false) String ano, @RequestParam(required = false) String mes,
-			@RequestParam(required = false) String data, @RequestParam(required = false) BigDecimal valor,
-			@RequestParam(required = false) String descricao, @RequestParam(required = false) Long categoriaId,
+			@RequestParam(required = false) String ano, 
+			@RequestParam(required = false) String mes,
+			@RequestParam(required = false) String data, 
+			@RequestParam(required = false) BigDecimal valor,
+			@RequestParam(required = false) String descricao, 
+			@RequestParam(required = false) Long categoriaId,
 			@RequestParam(required = false) Long contaId,
 			@PageableDefault(sort = "data", direction = Direction.DESC, page = 0, size = 15) Pageable pageable) {
 
-		return ResponseEntity
-				.ok(DespesaDto
-						.converter(
-								despesaRepository
-										.findAll(
-												Specification
-														.where(DespesaSpecification.contaIdAndcontaUsuarioEqual(contaId,
-																usuario))
-														.and(DespesaSpecification.dataEqual(data))
-														.and(DespesaSpecification.dataMensalEqual(mes))
-														.and(DespesaSpecification.descricaoLike(descricao))
-														.and(DespesaSpecification.valorEqual(valor))
-														.and(DespesaSpecification.categoriaIdEqual(categoriaId)),
-												pageable)));
+		Page<Despesa> despesas = despesaRepository.findAll(Specification
+				.where(DespesaSpecification.contaIdAndcontaUsuarioEqual(contaId, usuario))
+						.and(DespesaSpecification.dataEqual(data))
+						.and(DespesaSpecification.dataMensalEqual(mes))
+						.and(DespesaSpecification.descricaoLike(descricao))
+						.and(DespesaSpecification.valorEqual(valor))
+						.and(DespesaSpecification.categoriaIdEqual(categoriaId)), pageable);
+		
+		return ResponseEntity.ok(DespesaDto.converter(despesas));
 	}
 
 	@PostMapping

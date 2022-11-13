@@ -1,11 +1,13 @@
 package com.zionflame.imperiumserver.controller;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -32,6 +35,7 @@ import com.zionflame.imperiumserver.repository.AtivoRepository;
 import com.zionflame.imperiumserver.repository.ImagemRepository;
 import com.zionflame.imperiumserver.repository.SetorRepository;
 import com.zionflame.imperiumserver.repository.TipoAtivoRepository;
+import com.zionflame.imperiumserver.repository.specification.AtivoSpecification;
 import com.zionflame.imperiumserver.service.ImagemService;
 
 @RestController
@@ -121,8 +125,13 @@ public class AtivoController {
 	}
 
 	@GetMapping
-	public ResponseEntity<?> listar() {
-		return ResponseEntity.ok(AtivoDto.converter(ativoRepository.findAll()));
+	public ResponseEntity<?> listar(@RequestParam(required = false) String codigo,
+			@RequestParam(required = false) String nome) {
+		
+		List<Ativo> ativos = ativoRepository.findAll(
+				Specification.where(AtivoSpecification.codigoLike(codigo)).and(AtivoSpecification.nomeLike(nome)));
+
+		return ResponseEntity.ok(AtivoDto.converter(ativos));
 	}
 
 	@GetMapping("/tipos")
